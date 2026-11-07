@@ -139,18 +139,23 @@
   margin-inline: auto;
 }
 .site-header {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  width: min(calc(100% - 48px), 1240px);
+  transform: translateX(-50%);
   z-index: 50;
-  height: 96px;
-  border-bottom: 1px solid rgba(18, 59, 80, 0.1);
-  background: rgba(255, 248, 242, 0.95);
-  backdrop-filter: blur(12px);
+  height: 76px;
+  border: 1px solid rgba(18, 59, 80, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 254, 250, 0.94);
+  box-shadow: 0 10px 32px rgba(13, 43, 61, 0.1);
+  backdrop-filter: blur(16px);
 }
 .header-inner {
-  width: min(100% - 96px, 1320px);
+  width: 100%;
   height: 100%;
-  margin: auto;
+  padding-inline: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -211,11 +216,46 @@
   text-transform: uppercase;
   transition: color 0.2s;
 }
+.main-nav-login {
+  padding: 0;
+  border: 0;
+  color: #58524a;
+  background: none;
+  font-family: "Manrope:Medium", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
 .main-nav a:hover {
+  color: #168c83;
+}
+.main-nav-login:hover {
   color: #168c83;
 }
 .menu-toggle {
   display: none;
+}
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(18, 59, 80, 0.18);
+  border-radius: 50%;
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: #0d2b3d;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    border-color 0.2s;
+}
+.theme-toggle:hover {
+  background: rgba(18, 59, 80, 0.08);
 }
 .button {
   min-height: 44px;
@@ -1105,6 +1145,76 @@ footer {
   font-weight: 400;
   line-height: 44px;
 }
+.login-modal {
+  width: min(100%, 520px);
+  padding: 42px;
+}
+.login-modal h2 {
+  margin-bottom: 10px;
+}
+.login-intro {
+  margin-bottom: 24px;
+  color: #58524a;
+  font-size: 14px;
+  line-height: 22px;
+}
+.login-form {
+  gap: 14px;
+}
+.login-preview-note {
+  color: rgba(88, 82, 74, 0.8);
+  font-size: 12px;
+  line-height: 18px;
+}
+.login-guest {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(18, 59, 80, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #58524a;
+  font-size: 12px;
+}
+.login-guest .button,
+.login-guest-action {
+  min-height: 40px;
+  padding: 10px 16px;
+  font-size: 10px;
+}
+.login-adventure-list {
+  margin: 22px 0;
+  border-top: 1px solid rgba(18, 59, 80, 0.15);
+}
+.login-adventure {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(18, 59, 80, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.login-adventure h3 {
+  font-family: "Cormorant Garamond:Medium", serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.login-adventure p {
+  margin-top: 4px;
+  color: #58524a;
+  font-size: 12px;
+}
+.login-adventure .text-link {
+  flex: none;
+  margin-top: 0;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.login-guest-action {
+  width: 100%;
+}
 .booking-modal > p:not(.eyebrow),
 .confirmation > p:not(.eyebrow) {
   color: #58524a;
@@ -1215,8 +1325,7 @@ footer {
 }
 
 @media (max-width: 1100px) {
-  .section-shell,
-  .header-inner {
+  .section-shell {
     width: min(100% - 64px, 1320px);
   }
   .main-nav {
@@ -1263,19 +1372,23 @@ footer {
 
 @media (max-width: 800px) {
   .site-header {
-    height: 80px;
+    top: 12px;
+    width: calc(100% - 32px);
+    height: 68px;
   }
-  .section-shell,
   .header-inner {
+    padding-inline: 18px;
+  }
+  .section-shell {
     width: calc(100% - 48px);
   }
   .menu-toggle {
-    margin-left: auto;
-    width: 52px;
+    width: 40px;
     height: 44px;
     padding: 8px;
     border: 0;
     display: flex;
+    order: 2;
     flex-direction: column;
     justify-content: center;
     gap: 4px;
@@ -1293,19 +1406,26 @@ footer {
     height: 1px;
     overflow: hidden;
   }
+  .theme-toggle {
+    order: 1;
+  }
+  .header-inner {
+    gap: 12px;
+  }
   .main-nav {
     position: absolute;
-    top: 80px;
+    top: calc(100% + 10px);
     left: 0;
     right: 0;
     padding: 24px;
-    border-bottom: 1px solid rgba(18, 59, 80, 0.15);
+    border: 1px solid rgba(18, 59, 80, 0.12);
+    border-radius: 16px;
     display: none;
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    background: #fff8f2;
-    box-shadow: 0 20px 30px rgba(13, 43, 61, 0.08);
+    background: rgba(255, 254, 250, 0.98);
+    box-shadow: 0 18px 34px rgba(13, 43, 61, 0.14);
   }
   .main-nav.is-open {
     display: flex;
@@ -1314,6 +1434,13 @@ footer {
     width: 100%;
     padding: 14px 4px;
     border-bottom: 1px solid rgba(18, 59, 80, 0.1);
+    font-size: 12px;
+  }
+  .main-nav-login {
+    width: 100%;
+    padding: 14px 4px;
+    border-bottom: 1px solid rgba(18, 59, 80, 0.1);
+    text-align: left;
     font-size: 12px;
   }
   .hero {
@@ -1403,21 +1530,30 @@ footer {
 }
 
 @media (max-width: 520px) {
-  .section-shell,
-  .header-inner {
+  .section-shell {
     width: calc(100% - 36px);
   }
   .brand strong {
-    font-size: 13px;
-    letter-spacing: 1.8px;
+    font-size: 12px;
+    letter-spacing: 1.2px;
   }
   .brand small {
-    font-size: 8px;
-    letter-spacing: 1.5px;
+    display: none;
   }
   .brand-mark {
     width: 32px;
     height: 32px;
+  }
+  .header-inner {
+    padding-inline: 12px;
+    gap: 6px;
+  }
+  .menu-toggle {
+    width: 36px;
+  }
+  .theme-toggle {
+    width: 34px;
+    height: 34px;
   }
   .hero {
     padding-block: 48px 64px;
@@ -1593,5 +1729,167 @@ footer {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: #edf2eb;
+  background: #101a1d;
+  transition:
+    color 0.25s,
+    background-color 0.25s;
+}
+:root[data-theme="dark"] body {
+  background: #101a1d;
+}
+:root[data-theme="dark"] .site-header {
+  border-color: rgba(220, 239, 231, 0.14);
+  background: rgba(23, 38, 42, 0.94);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.3);
+}
+:root[data-theme="dark"] .brand-mark,
+:root[data-theme="dark"] .cta-mark,
+:root[data-theme="dark"] .confirmation-mark {
+  border-color: rgba(220, 239, 231, 0.3);
+}
+:root[data-theme="dark"] .theme-toggle {
+  border-color: rgba(220, 239, 231, 0.2);
+  color: #f2cf83;
+}
+:root[data-theme="dark"] .theme-toggle:hover {
+  background: rgba(220, 239, 231, 0.1);
+}
+:root[data-theme="dark"] .main-nav a,
+:root[data-theme="dark"] .main-nav-login,
+:root[data-theme="dark"] .brand small,
+:root[data-theme="dark"] .lead,
+:root[data-theme="dark"] .value-grid article > p:last-child,
+:root[data-theme="dark"] .section-heading p:not(.eyebrow),
+:root[data-theme="dark"] .section-heading > small,
+:root[data-theme="dark"] .price small,
+:root[data-theme="dark"] .meta,
+:root[data-theme="dark"] .experience-copy,
+:root[data-theme="dark"] .steps p,
+:root[data-theme="dark"] .steps small,
+:root[data-theme="dark"] .about p:not(.eyebrow),
+:root[data-theme="dark"] .about small,
+:root[data-theme="dark"] .final-cta p,
+:root[data-theme="dark"] .footer-grid a,
+:root[data-theme="dark"] .footer-grid small,
+:root[data-theme="dark"] .footer-brand p,
+:root[data-theme="dark"] .colophon,
+:root[data-theme="dark"] .booking-modal > p:not(.eyebrow),
+:root[data-theme="dark"] .confirmation > p:not(.eyebrow),
+:root[data-theme="dark"] .login-intro,
+:root[data-theme="dark"] .login-preview-note,
+:root[data-theme="dark"] .login-guest,
+:root[data-theme="dark"] .login-adventure p,
+:root[data-theme="dark"] .modal-facts small,
+:root[data-theme="dark"] .reference small,
+:root[data-theme="dark"] .booking-form label {
+  color: #b6c4bd;
+}
+:root[data-theme="dark"] .main-nav a:hover {
+  color: #75c9b4;
+}
+:root[data-theme="dark"] .main-nav-login:hover {
+  color: #75c9b4;
+}
+:root[data-theme="dark"] .eyebrow,
+:root[data-theme="dark"] .kicker,
+:root[data-theme="dark"] .steps em {
+  color: #75c9b4;
+}
+:root[data-theme="dark"] .button-primary {
+  color: #102323;
+  background: #75c9b4;
+}
+:root[data-theme="dark"] .button-primary:hover {
+  background: #91ddc7;
+}
+:root[data-theme="dark"] .button-secondary,
+:root[data-theme="dark"] .text-link,
+:root[data-theme="dark"] .steps code {
+  color: #edf2eb;
+}
+:root[data-theme="dark"] .button-secondary {
+  border-color: rgba(220, 239, 231, 0.35);
+}
+:root[data-theme="dark"] .button-secondary:hover,
+:root[data-theme="dark"] .text-link {
+  border-color: #75c9b4;
+}
+:root[data-theme="dark"] .hero-actions code {
+  background: rgba(220, 239, 231, 0.1);
+}
+:root[data-theme="dark"] .values {
+  border-color: rgba(220, 239, 231, 0.12);
+  background: #1a292d;
+}
+:root[data-theme="dark"] .value-grid article,
+:root[data-theme="dark"] .section-heading,
+:root[data-theme="dark"] .experience,
+:root[data-theme="dark"] .steps article,
+:root[data-theme="dark"] .about,
+:root[data-theme="dark"] footer,
+:root[data-theme="dark"] .footer-grid,
+:root[data-theme="dark"] .booking-modal .modal-facts {
+  border-color: rgba(220, 239, 231, 0.14);
+}
+:root[data-theme="dark"] .image-label {
+  color: #edf2eb;
+  background: rgba(23, 38, 42, 0.92);
+}
+:root[data-theme="dark"] .about {
+  background: #18272b;
+}
+:root[data-theme="dark"] .final-cta {
+  background: #101a1d;
+}
+:root[data-theme="dark"] footer {
+  background: #17262a;
+}
+:root[data-theme="dark"] .footer-code {
+  border-color: rgba(220, 239, 231, 0.16);
+  background: #101a1d;
+}
+:root[data-theme="dark"] .booking-modal {
+  color: #edf2eb;
+  background: #18272b;
+}
+:root[data-theme="dark"] .modal-close {
+  color: #edf2eb;
+  background: rgba(16, 26, 29, 0.9);
+}
+:root[data-theme="dark"] .booking-form input,
+:root[data-theme="dark"] .booking-form select {
+  border-color: rgba(220, 239, 231, 0.25);
+  color: #edf2eb;
+  background: #101a1d;
+}
+:root[data-theme="dark"] .booking-total,
+:root[data-theme="dark"] .reference {
+  background: #20343a;
+}
+:root[data-theme="dark"] .main-nav {
+  border-color: rgba(220, 239, 231, 0.14);
+  background: rgba(23, 38, 42, 0.98);
+}
+:root[data-theme="dark"] .main-nav a {
+  border-color: rgba(220, 239, 231, 0.1);
+}
+:root[data-theme="dark"] .main-nav-login {
+  border-color: rgba(220, 239, 231, 0.1);
+}
+:root[data-theme="dark"] .login-guest,
+:root[data-theme="dark"] .login-adventure-list,
+:root[data-theme="dark"] .login-adventure {
+  border-color: rgba(220, 239, 231, 0.14);
+}
+
+@media (max-width: 520px) {
+  :root[data-theme="dark"] .menu-toggle {
+    color: #edf2eb;
   }
 }

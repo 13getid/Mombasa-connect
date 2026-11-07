@@ -13,6 +13,8 @@ type Experience = {
   featured?: boolean;
 };
 
+type Theme = "light" | "dark";
+
 const experiences: Experience[] = [
   {
     id: 1,
@@ -118,7 +120,17 @@ const Arrow = ({ light = false, compact = false }: { light?: boolean; compact?: 
   />
 );
 
-function Header({ onBook }: { onBook: () => void }) {
+function Header({
+  onBook,
+  onLogin,
+  theme,
+  onToggleTheme,
+}: {
+  onBook: () => void;
+  onLogin: () => void;
+  theme: Theme;
+  onToggleTheme: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -129,7 +141,7 @@ function Header({ onBook }: { onBook: () => void }) {
             <img src="/assets/ea4a6.svg" alt="" />
           </span>
           <span>
-            <strong>Mombasa Tour Direct</strong>
+            <strong>Mombasa-Connect</strong>
             <small>Old Town & Tudor Creek</small>
           </span>
         </a>
@@ -161,7 +173,27 @@ function Header({ onBook }: { onBook: () => void }) {
           <a href="#inquiries" onClick={close}>
             Inquiries
           </a>
+          <button
+            className="main-nav-login"
+            type="button"
+            onClick={() => {
+              close();
+              onLogin();
+            }}
+          >
+            Log in
+          </button>
         </nav>
+        <button
+          className="theme-toggle"
+          type="button"
+          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+          aria-pressed={theme === "dark"}
+          title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+          onClick={onToggleTheme}
+        >
+          <span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span>
+        </button>
         <button className="button button-primary header-cta" onClick={onBook}>
           Book an experience
         </button>
@@ -439,9 +471,139 @@ function BookingModal({ selected, onClose }: { selected: Experience | null; onCl
   );
 }
 
+function LoginModal({
+  onClose,
+  onGuest,
+  onSelectExperience,
+}: {
+  onClose: () => void;
+  onGuest: () => void;
+  onSelectExperience: (experience: Experience) => void;
+}) {
+  const [stage, setStage] = useState<"login" | "adventures">("login");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const submitPreview = (event: FormEvent) => {
+    event.preventDefault();
+    setStage("adventures");
+  };
+
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="booking-modal login-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="login-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button className="modal-close" onClick={onClose} aria-label="Close login">
+          ×
+        </button>
+        {stage === "login" ? (
+          <>
+            <p className="eyebrow">Client access · Preview</p>
+            <h2 id="login-title">Welcome back.</h2>
+            <p className="login-intro">Sign in to explore the adventures available around Mombasa.</p>
+            <form className="booking-form login-form" onSubmit={submitPreview}>
+              <label>
+                Email address
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  placeholder="Preview only"
+                />
+              </label>
+              <p className="login-preview-note">
+                Preview only. Sign-in is not connected to an account service; credentials are not
+                sent or saved.
+              </p>
+              <button className="button button-primary">Continue to adventures</button>
+            </form>
+            <div className="login-guest">
+              <span>Just looking to book?</span>
+              <button className="button button-secondary" onClick={onGuest}>
+                Continue as guest
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="eyebrow">Adventure collection · Preview</p>
+            <h2 id="login-title">Find your next story.</h2>
+            <p className="login-intro">Browsing as {email}. Choose a tour to see booking details.</p>
+            <div className="login-adventure-list">
+              {experiences.map((experience) => (
+                <article className="login-adventure" key={experience.id}>
+                  <div>
+                    <h3>{experience.name}</h3>
+                    <p>
+                      {experience.duration} · {experience.price}
+                    </p>
+                  </div>
+                  <button
+                    className="text-link"
+                    onClick={() => onSelectExperience(experience)}
+                    aria-label={`View and book ${experience.name}`}
+                  >
+                    View
+                    <Arrow compact />
+                  </button>
+                </article>
+              ))}
+            </div>
+            <button className="button button-secondary login-guest-action" onClick={onGuest}>
+              Continue as guest
+            </button>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export default function App() {
   const [booking, setBooking] = useState<Experience | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      return window.localStorage.getItem("mombasa-connect-theme") === "dark" ? "dark" : "light";
+    } catch {
+      return "light";
+    }
+  });
   const startBooking = () => setBooking(experiences[0]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      window.localStorage.setItem("mombasa-connect-theme", theme);
+    } catch {
+      // The selected theme still applies for this session when storage is unavailable.
+    }
+  }, [theme]);
+
   const copyCode = async () => {
     try {
       await navigator.clipboard.writeText("*384*123#");
@@ -452,7 +614,12 @@ export default function App() {
 
   return (
     <div id="top">
-      <Header onBook={startBooking} />
+      <Header
+        onBook={startBooking}
+        onLogin={() => setLoginOpen(true)}
+        theme={theme}
+        onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+      />
       <main>
         <section className="hero section-shell">
           <div className="hero-copy">
@@ -689,6 +856,19 @@ export default function App() {
           </div>
         </div>
       </footer>
+      {loginOpen && (
+        <LoginModal
+          onClose={() => setLoginOpen(false)}
+          onGuest={() => {
+            setLoginOpen(false);
+            document.getElementById("experiences")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          onSelectExperience={(experience) => {
+            setLoginOpen(false);
+            setBooking(experience);
+          }}
+        />
+      )}
       <BookingModal selected={booking} onClose={() => setBooking(null)} />
     </div>
   );
