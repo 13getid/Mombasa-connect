@@ -180,8 +180,18 @@
   place-items: center;
 }
 .brand-mark img {
-  width: 16px;
-  height: 16px;
+  width: 62px;
+  height: 62px;
+  max-width: none;
+  border-radius: 50%;
+  object-fit: cover;
+  transform: translate(1px, -1px) scale(1.12);
+}
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  background: #fffefa;
 }
 .brand strong,
 .footer-brand h3 {
@@ -1541,8 +1551,12 @@ footer {
     display: none;
   }
   .brand-mark {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+  }
+  .brand-mark img {
+    width: 54px;
+    height: 54px;
   }
   .header-inner {
     padding-inline: 12px;
@@ -1752,6 +1766,9 @@ footer {
 :root[data-theme="dark"] .cta-mark,
 :root[data-theme="dark"] .confirmation-mark {
   border-color: rgba(220, 239, 231, 0.3);
+}
+:root[data-theme="dark"] .brand-mark {
+  background: #17262a;
 }
 :root[data-theme="dark"] .theme-toggle {
   border-color: rgba(220, 239, 231, 0.2);

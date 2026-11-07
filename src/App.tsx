@@ -138,7 +138,7 @@ function Header({
       <div className="header-inner">
         <a className="brand" href="#top" onClick={close} aria-label="Mombasa Tour Direct home">
           <span className="brand-mark">
-            <img src="/assets/ea4a6.svg" alt="" />
+            <img src="/assets/logo.png" alt="" />
           </span>
           <span>
             <strong>Mombasa-Connect</strong>
@@ -449,7 +449,7 @@ function BookingModal({ selected, onClose }: { selected: Experience | null; onCl
         {stage === "success" && (
           <div className="confirmation">
             <span className="confirmation-mark">
-              <img src="/assets/8a3db.svg" alt="" />
+              <img src="/assets/logo.png" alt="" />
             </span>
             <p className="eyebrow">Booking confirmed</p>
             <h2 id="booking-title">Your Mombasa story starts here.</h2>
@@ -796,7 +796,7 @@ export default function App() {
 
         <section className="final-cta">
           <span className="cta-mark">
-            <img src="/assets/8a3db.svg" alt="" />
+            <img src="/assets/logo.png" alt="" />
           </span>
           <h2>
             Your Mombasa Story <em>Starts Here.</em>
