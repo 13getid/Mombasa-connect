@@ -1,0 +1,10 @@
+{
+  "description": "Explore authentic Mombasa tours, compare experiences, and book local adventures through a simple online or USSD-friendly booking flow.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
