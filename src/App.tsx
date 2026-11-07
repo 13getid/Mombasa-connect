@@ -141,8 +141,8 @@ function Header({
             <img src="/assets/logo.png" alt="" />
           </span>
           <span>
-            <strong>Mombasa-Connect</strong>
-            <small>Old Town & Tudor Creek</small>
+            <strong>Mombasa</strong>
+            <small>Connect</small>
           </span>
         </a>
         <button
