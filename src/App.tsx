@@ -471,18 +471,7 @@ function BookingModal({ selected, onClose }: { selected: Experience | null; onCl
   );
 }
 
-function LoginModal({
-  onClose,
-  onGuest,
-  onSelectExperience,
-}: {
-  onClose: () => void;
-  onGuest: () => void;
-  onSelectExperience: (experience: Experience) => void;
-}) {
-  const [stage, setStage] = useState<"login" | "adventures">("login");
-  const [email, setEmail] = useState("");
-
+function LoginModal({ onClose, onGuest }: { onClose: () => void; onGuest: () => void }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -492,7 +481,7 @@ function LoginModal({
 
   const submitPreview = (event: FormEvent) => {
     event.preventDefault();
-    setStage("adventures");
+    window.location.assign("/dashboard");
   };
 
   return (
@@ -507,77 +496,31 @@ function LoginModal({
         <button className="modal-close" onClick={onClose} aria-label="Close login">
           ×
         </button>
-        {stage === "login" ? (
-          <>
-            <p className="eyebrow">Client access · Preview</p>
-            <h2 id="login-title">Welcome back.</h2>
-            <p className="login-intro">Sign in to explore the adventures available around Mombasa.</p>
-            <form className="booking-form login-form" onSubmit={submitPreview}>
-              <label>
-                Email address
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  placeholder="Preview only"
-                />
-              </label>
-              <p className="login-preview-note">
-                Preview only. Sign-in is not connected to an account service; credentials are not
-                sent or saved.
-              </p>
-              <button className="button button-primary">Continue to adventures</button>
-            </form>
-            <div className="login-guest">
-              <span>Just looking to book?</span>
-              <button className="button button-secondary" onClick={onGuest}>
-                Continue as guest
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="eyebrow">Adventure collection · Preview</p>
-            <h2 id="login-title">Find your next story.</h2>
-            <p className="login-intro">Browsing as {email}. Choose a tour to see booking details.</p>
-            <div className="login-adventure-list">
-              {experiences.map((experience) => (
-                <article className="login-adventure" key={experience.id}>
-                  <div>
-                    <h3>{experience.name}</h3>
-                    <p>
-                      {experience.duration} · {experience.price}
-                    </p>
-                  </div>
-                  <button
-                    className="text-link"
-                    onClick={() => onSelectExperience(experience)}
-                    aria-label={`View and book ${experience.name}`}
-                  >
-                    View
-                    <Arrow compact />
-                  </button>
-                </article>
-              ))}
-            </div>
-            <button className="button button-secondary login-guest-action" onClick={onGuest}>
+        <>
+          <p className="eyebrow">Client access · Preview</p>
+          <h2 id="login-title">Welcome back.</h2>
+          <p className="login-intro">
+            Open Amelia's customer dashboard to manage her Mombasa experiences.
+          </p>
+          <form className="booking-form login-form" onSubmit={submitPreview}>
+            <label>
+              Demo customer
+              <input name="email" type="email" readOnly value="amelia.bennett@email.com" />
+            </label>
+            <p className="login-preview-note">
+              Demo access only. No password is needed. Real account sign-in is not connected yet.
+            </p>
+            <button type="submit" className="button button-primary">
+              Log in as Amelia
+            </button>
+          </form>
+          <div className="login-guest">
+            <span>Just looking to book?</span>
+            <button className="button button-secondary" onClick={onGuest}>
               Continue as guest
             </button>
-          </>
-        )}
+          </div>
+        </>
       </section>
     </div>
   );
@@ -862,10 +805,6 @@ export default function App() {
           onGuest={() => {
             setLoginOpen(false);
             document.getElementById("experiences")?.scrollIntoView({ behavior: "smooth" });
-          }}
-          onSelectExperience={(experience) => {
-            setLoginOpen(false);
-            setBooking(experience);
           }}
         />
       )}
