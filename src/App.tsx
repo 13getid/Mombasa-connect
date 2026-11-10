@@ -1,4 +1,6 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { ChevronDown, Compass, ShieldCheck, UserRound } from "lucide-react";
+import { ThemeToggle } from "./theme";
 
 type Experience = {
   id: number;
@@ -12,8 +14,6 @@ type Experience = {
   code: string;
   featured?: boolean;
 };
-
-type Theme = "light" | "dark";
 
 const experiences: Experience[] = [
   {
@@ -120,19 +120,33 @@ const Arrow = ({ light = false, compact = false }: { light?: boolean; compact?: 
   />
 );
 
-function Header({
-  onBook,
-  onLogin,
-  theme,
-  onToggleTheme,
-}: {
-  onBook: () => void;
-  onLogin: () => void;
-  theme: Theme;
-  onToggleTheme: () => void;
-}) {
+function Header({ onBook, onLogin }: { onBook: () => void; onLogin: () => void }) {
   const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+  const [loginMenuOpen, setLoginMenuOpen] = useState(false);
+  const loginMenu = useRef<HTMLDivElement>(null);
+  const loginTrigger = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setOpen(false);
+    setLoginMenuOpen(false);
+  };
+  useEffect(() => {
+    if (!loginMenuOpen) return;
+    const outside = (event: PointerEvent) => {
+      if (!loginMenu.current?.contains(event.target as Node)) setLoginMenuOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLoginMenuOpen(false);
+        loginTrigger.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [loginMenuOpen]);
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -173,27 +187,62 @@ function Header({
           <a href="#inquiries" onClick={close}>
             Inquiries
           </a>
-          <button
-            className="main-nav-login"
-            type="button"
-            onClick={() => {
-              close();
-              onLogin();
+          <div
+            className="login-role-control"
+            ref={loginMenu}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+                setLoginMenuOpen(false);
             }}
           >
-            Log in
-          </button>
+            <button
+              className="main-nav-login"
+              type="button"
+              ref={loginTrigger}
+              aria-expanded={loginMenuOpen}
+              aria-controls="login-role-options"
+              onClick={() => setLoginMenuOpen(!loginMenuOpen)}
+            >
+              Log in <ChevronDown size={14} />
+            </button>
+            {loginMenuOpen && (
+              <div
+                className="login-role-options"
+                id="login-role-options"
+                aria-label="Choose your login"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    close();
+                    onLogin();
+                  }}
+                >
+                  <UserRound size={18} />
+                  <span>
+                    <strong>Customer</strong>
+                    <small>Bookings & dashboard</small>
+                  </span>
+                </button>
+                <button type="button" disabled>
+                  <ShieldCheck size={18} />
+                  <span>
+                    <strong>Admin</strong>
+                    <small>Coming soon</small>
+                  </span>
+                </button>
+                <button type="button" disabled>
+                  <Compass size={18} />
+                  <span>
+                    <strong>Tour Guide</strong>
+                    <small>Coming soon</small>
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
-        <button
-          className="theme-toggle"
-          type="button"
-          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          aria-pressed={theme === "dark"}
-          title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-          onClick={onToggleTheme}
-        >
-          <span aria-hidden="true">{theme === "light" ? "☾" : "☀"}</span>
-        </button>
+        <ThemeToggle />
         <button className="button button-primary header-cta" onClick={onBook}>
           Book an experience
         </button>
@@ -529,23 +578,7 @@ function LoginModal({ onClose, onGuest }: { onClose: () => void; onGuest: () => 
 export default function App() {
   const [booking, setBooking] = useState<Experience | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
-  const [theme, setTheme] = useState<Theme>(() => {
-    try {
-      return window.localStorage.getItem("mombasa-connect-theme") === "dark" ? "dark" : "light";
-    } catch {
-      return "light";
-    }
-  });
   const startBooking = () => setBooking(experiences[0]);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try {
-      window.localStorage.setItem("mombasa-connect-theme", theme);
-    } catch {
-      // The selected theme still applies for this session when storage is unavailable.
-    }
-  }, [theme]);
 
   const copyCode = async () => {
     try {
@@ -557,12 +590,7 @@ export default function App() {
 
   return (
     <div id="top">
-      <Header
-        onBook={startBooking}
-        onLogin={() => setLoginOpen(true)}
-        theme={theme}
-        onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
-      />
+      <Header onBook={startBooking} onLogin={() => setLoginOpen(true)} />
       <main>
         <section className="hero section-shell">
           <div className="hero-copy">

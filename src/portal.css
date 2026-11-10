@@ -56,6 +56,7 @@
 }
 
 :root {
+  color-scheme: light;
   --ocean: #123b50;
   --ocean-deep: #0d2b3d;
   --teal: #168c83;
@@ -89,6 +90,55 @@
   font-family: var(--sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+:root[data-theme="dark"] {
+  --ocean: #bdd9e5;
+  --ocean-deep: #edf3ee;
+  --teal: #73cabe;
+  --teal-dark: #9cddd2;
+  --sand: #22363e;
+  --sand-deep: #30454c;
+  --ivory: #101d24;
+  --paper: #182a32;
+  --charcoal: #edf3ee;
+  --muted: #b4c1bd;
+  --line: #d6e5df33;
+  --line-strong: #d6e5df55;
+  --danger: #f1a69a;
+  --danger-soft: #422b2b;
+  --success-soft: #203d35;
+  --warning-soft: #433921;
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .portal-sidebar,
+:root[data-theme="dark"] .upcoming-feature,
+:root[data-theme="dark"] .support-hero {
+  --ocean: #123b50;
+  --ocean-deep: #0d2b3d;
+  --paper: #fff8f2;
+}
+:root[data-theme="dark"] .portal-header {
+  background: #182a32f2;
+}
+:root[data-theme="dark"] .avatar {
+  color: #102b2a;
+}
+:root[data-theme="dark"] .guide-section {
+  background: var(--sand);
+}
+:root[data-theme="dark"] .guide-avatar {
+  color: #102b2a;
+}
+:root[data-theme="dark"] .status-confirmed,
+:root[data-theme="dark"] .status-paid {
+  color: #9cddd2;
+}
+:root[data-theme="dark"] .status-pending {
+  color: #f1d18d;
+}
+:root[data-theme="dark"] .status-completed {
+  background: #243d48;
 }
 
 @layer base {

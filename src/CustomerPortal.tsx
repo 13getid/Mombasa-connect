@@ -1,4 +1,5 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { ThemeToggle } from "./theme";
 
 type View =
   | "dashboard"
@@ -437,6 +438,7 @@ function TopHeader({
         <h1>{viewNames[view]}</h1>
       </div>
       <div className="header-actions">
+        <ThemeToggle />
         <button
           className="notification-button"
           onClick={() => onNavigate("notifications")}
