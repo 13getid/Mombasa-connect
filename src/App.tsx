@@ -500,18 +500,18 @@ function LoginModal({ onClose, onGuest }: { onClose: () => void; onGuest: () => 
           <p className="eyebrow">Client access · Preview</p>
           <h2 id="login-title">Welcome back.</h2>
           <p className="login-intro">
-            Open Amelia's customer dashboard to manage her Mombasa experiences.
+            Open Amara's customer dashboard to manage her Mombasa Connect experiences.
           </p>
           <form className="booking-form login-form" onSubmit={submitPreview}>
             <label>
               Demo customer
-              <input name="email" type="email" readOnly value="amelia.bennett@email.com" />
+              <input name="email" type="email" readOnly value="amara.kamau@example.com" />
             </label>
             <p className="login-preview-note">
               Demo access only. No password is needed. Real account sign-in is not connected yet.
             </p>
             <button type="submit" className="button button-primary">
-              Log in as Amelia
+              Log in as Amara
             </button>
           </form>
           <div className="login-guest">
