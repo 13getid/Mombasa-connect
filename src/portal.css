@@ -57,22 +57,22 @@
 
 :root {
   color-scheme: light;
-  --ocean: #123b50;
-  --ocean-deep: #0d2b3d;
-  --teal: #168c83;
-  --teal-dark: #0e5852;
-  --sand: #f5ebdd;
-  --sand-deep: #eadbc6;
-  --ivory: #fffefa;
-  --paper: #fff8f2;
-  --amber: #e9a23b;
-  --charcoal: #263238;
-  --muted: #69635b;
-  --line: rgba(18, 59, 80, 0.14);
-  --line-strong: rgba(18, 59, 80, 0.24);
-  --danger: #a94b45;
-  --danger-soft: #f8e9e5;
-  --success-soft: #e4f1ec;
+  --ocean: #006b9e;
+  --ocean-deep: #004f78;
+  --teal: #c92a35;
+  --teal-dark: #a51f2a;
+  --sand: #e7f5ff;
+  --sand-deep: #cceaff;
+  --ivory: #f8fcff;
+  --paper: #f8fcff;
+  --amber: #c92a35;
+  --charcoal: #153e5c;
+  --muted: #49667c;
+  --line: rgba(0, 107, 158, 0.14);
+  --line-strong: rgba(0, 107, 158, 0.24);
+  --danger: #c92a35;
+  --danger-soft: #ffe9eb;
+  --success-soft: #e7f5ff;
   --warning-soft: #fff1d6;
   --sidebar-width: 276px;
   --header-height: 88px;
@@ -84,7 +84,7 @@
   --sans-semibold: "Inter:Semi Bold", Arial, sans-serif;
   --functional: "Manrope:Medium", Arial, sans-serif;
   --functional-semibold: "Manrope:SemiBold", Arial, sans-serif;
-  --shadow-soft: 0 18px 50px rgba(13, 43, 61, 0.09);
+  --shadow-soft: 0 18px 50px rgba(0, 79, 120, 0.09);
   color: var(--ocean-deep);
   background: var(--ivory);
   font-family: var(--sans);
@@ -93,52 +93,52 @@
 }
 
 :root[data-theme="dark"] {
-  --ocean: #bdd9e5;
-  --ocean-deep: #edf3ee;
-  --teal: #73cabe;
-  --teal-dark: #9cddd2;
-  --sand: #22363e;
-  --sand-deep: #30454c;
-  --ivory: #101d24;
-  --paper: #182a32;
-  --charcoal: #edf3ee;
-  --muted: #b4c1bd;
-  --line: #d6e5df33;
-  --line-strong: #d6e5df55;
-  --danger: #f1a69a;
+  --ocean: #9cdbff;
+  --ocean-deep: #f8fcff;
+  --teal: #ff9196;
+  --teal-dark: #ffb6bb;
+  --sand: #1c3b52;
+  --sand-deep: #2b5069;
+  --ivory: #0a1d2e;
+  --paper: #122c40;
+  --charcoal: #f8fcff;
+  --muted: #b9d5e8;
+  --line: #9cdbff33;
+  --line-strong: #9cdbff55;
+  --danger: #ff9196;
   --danger-soft: #422b2b;
-  --success-soft: #203d35;
+  --success-soft: #173e55;
   --warning-soft: #433921;
   color-scheme: dark;
 }
 :root[data-theme="dark"] .portal-sidebar,
 :root[data-theme="dark"] .upcoming-feature,
 :root[data-theme="dark"] .support-hero {
-  --ocean: #123b50;
-  --ocean-deep: #0d2b3d;
-  --paper: #fff8f2;
+  --ocean: #006b9e;
+  --ocean-deep: #004f78;
+  --paper: #f8fcff;
 }
 :root[data-theme="dark"] .portal-header {
-  background: #182a32f2;
+  background: #122c40f2;
 }
 :root[data-theme="dark"] .avatar {
-  color: #102b2a;
+  color: #153e5c;
 }
 :root[data-theme="dark"] .guide-section {
   background: var(--sand);
 }
 :root[data-theme="dark"] .guide-avatar {
-  color: #102b2a;
+  color: #153e5c;
 }
 :root[data-theme="dark"] .status-confirmed,
 :root[data-theme="dark"] .status-paid {
-  color: #9cddd2;
+  color: #9cdbff;
 }
 :root[data-theme="dark"] .status-pending {
   color: #f1d18d;
 }
 :root[data-theme="dark"] .status-completed {
-  background: #243d48;
+  background: #1c3b52;
 }
 
 @layer base {
@@ -185,7 +185,7 @@
 .portal-app {
   min-height: 100vh;
   background:
-    linear-gradient(rgba(18, 59, 80, 0.025) 1px, transparent 1px) 0 0 / 100% 64px,
+    linear-gradient(rgba(0, 107, 158, 0.025) 1px, transparent 1px) 0 0 / 100% 64px,
     var(--ivory);
 }
 
@@ -244,7 +244,7 @@
 
 .portal-brand small {
   display: block;
-  color: rgba(255, 248, 242, 0.52);
+  color: rgba(248, 252, 255, 0.52);
   font-family: var(--functional);
   font-size: 9px;
   line-height: 14px;
@@ -265,7 +265,7 @@
 
 .nav-label {
   margin: 0 12px 12px;
-  color: rgba(255, 248, 242, 0.38);
+  color: rgba(248, 252, 255, 0.38);
   font-family: var(--functional-semibold);
   font-size: 9px;
   letter-spacing: 2px;
@@ -282,7 +282,7 @@
   display: flex;
   align-items: center;
   gap: 13px;
-  color: rgba(255, 248, 242, 0.66);
+  color: rgba(248, 252, 255, 0.66);
   background: transparent;
   font-family: var(--functional);
   font-size: 12px;
@@ -311,12 +311,12 @@
 .portal-nav button.active,
 .sidebar-lower button.active {
   color: white;
-  background: rgba(22, 140, 131, 0.2);
+  background: rgba(201, 42, 53, 0.2);
 }
 
 .portal-nav button.active::before,
 .sidebar-lower button.active::before {
-  background: #48b9ac;
+  background: #63c5f5;
 }
 
 .portal-nav button small {
@@ -347,7 +347,7 @@
 }
 
 .sidebar-note > span {
-  color: #a6cbe5;
+  color: #b8e4ff;
   font-family: var(--functional-semibold);
   font-size: 10px;
   letter-spacing: 1px;
@@ -356,7 +356,7 @@
 
 .sidebar-note p {
   margin: 8px 0 12px;
-  color: rgba(255, 248, 242, 0.58);
+  color: rgba(248, 252, 255, 0.58);
   font-size: 11px;
   line-height: 17px;
 }
@@ -387,7 +387,7 @@
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  background: rgba(255, 254, 250, 0.94);
+  background: rgba(248, 252, 255, 0.94);
   backdrop-filter: blur(14px);
 }
 
@@ -608,12 +608,12 @@
 }
 
 .portal-button.primary {
-  color: var(--paper);
-  background: var(--ocean-deep);
+  color: var(--mc-on-scarlet);
+  background: var(--mc-scarlet);
 }
 
 .portal-button.primary:hover {
-  background: var(--teal-dark);
+  background: #a51f2a;
 }
 
 .portal-button.secondary {
@@ -687,7 +687,7 @@
   grid-template-columns: minmax(390px, 1.1fr) minmax(480px, 1fr);
   color: var(--paper);
   background: var(--ocean);
-  box-shadow: 0 26px 60px -34px rgba(13, 43, 61, 0.68);
+  box-shadow: 0 26px 60px -34px rgba(0, 79, 120, 0.68);
 }
 
 .upcoming-photo {
@@ -700,7 +700,7 @@
   content: "";
   position: absolute;
   inset: 38% 0 0;
-  background: linear-gradient(transparent, rgba(13, 43, 61, 0.7));
+  background: linear-gradient(transparent, rgba(0, 79, 120, 0.7));
 }
 
 .upcoming-photo > img {
@@ -748,7 +748,7 @@
 }
 
 .upcoming-heading .portal-eyebrow {
-  color: #a6cbe5;
+  color: #b8e4ff;
 }
 
 .upcoming-heading h2 {
@@ -778,7 +778,7 @@
 
 .status-confirmed,
 .status-paid {
-  color: #0d675a;
+  color: #006b9e;
   background: var(--success-soft);
 }
 
@@ -789,7 +789,7 @@
 
 .status-completed {
   color: var(--ocean);
-  background: #e4edf1;
+  background: #e7f5ff;
 }
 
 .status-cancelled,
@@ -800,13 +800,13 @@
 
 .booking-reference {
   margin-top: 17px;
-  color: rgba(255, 248, 242, 0.6);
+  color: rgba(248, 252, 255, 0.6);
   font-size: 11px;
 }
 
 .booking-reference b {
   margin-left: 5px;
-  color: rgba(255, 248, 242, 0.9);
+  color: rgba(248, 252, 255, 0.9);
   font-family: var(--sans-regular);
   font-weight: 400;
 }
@@ -827,7 +827,7 @@
 }
 
 .upcoming-facts .icon {
-  color: #a6cbe5;
+  color: #b8e4ff;
 }
 
 .upcoming-facts span,
@@ -840,7 +840,7 @@
 .upcoming-facts small,
 .upcoming-footer small,
 .detail-facts small {
-  color: rgba(255, 248, 242, 0.5);
+  color: rgba(248, 252, 255, 0.5);
   font-family: var(--functional);
   font-size: 8px;
   letter-spacing: 1px;
@@ -977,7 +977,7 @@
 }
 
 .booking-row:hover {
-  background: rgba(245, 235, 221, 0.32);
+  background: rgba(231, 245, 255, 0.32);
 }
 
 .booking-row > img {
@@ -1075,7 +1075,7 @@
   bottom: 12px;
   padding: 5px 8px;
   color: var(--paper);
-  background: rgba(13, 43, 61, 0.82);
+  background: rgba(0, 79, 120, 0.82);
   font-family: var(--functional-semibold);
   font-size: 7px;
   letter-spacing: 1px;
@@ -1215,7 +1215,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: rgba(245, 235, 221, 0.24);
+  background: rgba(231, 245, 255, 0.24);
 }
 
 .empty-state > span {
@@ -1271,7 +1271,7 @@
   content: "";
   position: absolute;
   inset: 50% 0 0;
-  background: linear-gradient(transparent, rgba(13, 43, 61, 0.58));
+  background: linear-gradient(transparent, rgba(0, 79, 120, 0.58));
 }
 
 .explore-hero-photo img {
@@ -1416,7 +1416,7 @@
 .notification-item small {
   display: block;
   margin-top: 10px;
-  color: rgba(105, 99, 91, 0.78);
+  color: rgba(73, 102, 124, 0.78);
   font-size: 9px;
 }
 
@@ -1435,7 +1435,7 @@
 .success-banner {
   margin: -16px 0 30px;
   padding: 15px 17px;
-  border: 1px solid rgba(22, 140, 131, 0.22);
+  border: 1px solid rgba(201, 42, 53, 0.22);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1643,12 +1643,12 @@
 }
 
 .support-hero .portal-eyebrow {
-  color: #a6cbe5;
+  color: #b8e4ff;
 }
 
 .support-hero > div > p:last-child {
   max-width: 540px;
-  color: rgba(255, 248, 242, 0.7);
+  color: rgba(248, 252, 255, 0.7);
 }
 
 .support-contact {
@@ -1665,7 +1665,7 @@
 }
 
 .support-contact > span .icon {
-  color: #a6cbe5;
+  color: #b8e4ff;
 }
 
 .support-contact small,
@@ -1674,7 +1674,7 @@
 }
 
 .support-contact small {
-  color: rgba(255, 248, 242, 0.45);
+  color: rgba(248, 252, 255, 0.45);
   font-family: var(--functional);
   font-size: 8px;
   letter-spacing: 1px;
@@ -1691,7 +1691,7 @@
 
 .support-contact > p {
   margin-top: 16px;
-  color: rgba(255, 248, 242, 0.45);
+  color: rgba(248, 252, 255, 0.45);
   font-size: 9px;
 }
 
@@ -1827,7 +1827,7 @@
   content: "";
   position: absolute;
   inset: 50% 0 0;
-  background: linear-gradient(transparent, rgba(13, 43, 61, 0.6));
+  background: linear-gradient(transparent, rgba(0, 79, 120, 0.6));
 }
 
 .detail-photo img {
@@ -1929,7 +1929,7 @@
   grid-template-columns: 58px 1fr auto;
   gap: 18px;
   align-items: center;
-  background: rgba(245, 235, 221, 0.7);
+  background: rgba(231, 245, 255, 0.7);
 }
 
 .guide-avatar {
@@ -2084,7 +2084,7 @@
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--sand) 25%, #faf4eb 45%, var(--sand) 65%) 0 0 / 200% 100%;
+  background: linear-gradient(90deg, var(--sand) 25%, #edf8ff 45%, var(--sand) 65%) 0 0 / 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
@@ -2132,7 +2132,7 @@
   content: "";
   position: absolute;
   inset: 45% 0 0;
-  background: linear-gradient(transparent, rgba(13, 43, 61, 0.72));
+  background: linear-gradient(transparent, rgba(0, 79, 120, 0.72));
 }
 
 .signed-out-photo img {
@@ -2200,7 +2200,7 @@
   padding: 20px;
   display: grid;
   place-items: center;
-  background: rgba(13, 43, 61, 0.76);
+  background: rgba(0, 79, 120, 0.76);
   backdrop-filter: blur(8px);
 }
 
@@ -2227,7 +2227,7 @@
   display: grid;
   place-items: center;
   color: var(--ocean-deep);
-  background: rgba(255, 254, 250, 0.92);
+  background: rgba(248, 252, 255, 0.92);
 }
 
 .modal-photo {
@@ -2412,7 +2412,7 @@
     display: block;
     visibility: hidden;
     opacity: 0;
-    background: rgba(13, 43, 61, 0.58);
+    background: rgba(0, 79, 120, 0.58);
     transition: opacity 0.2s;
   }
   .drawer-scrim.visible {
@@ -2818,7 +2818,7 @@
     left: 12px;
     padding: 3px 7px;
     color: var(--ocean-deep);
-    background: rgba(255, 248, 242, 0.9);
+    background: rgba(248, 252, 255, 0.9);
   }
   .explore-feature > img {
     height: 310px;

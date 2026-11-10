@@ -50,7 +50,7 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 ### Shared Appearance
 
-The interface combines coastal blues, teal, warm neutrals, editorial serif headings, and functional sans-serif text. The portal uses Mombasa Connect branding; some demonstration content retains the Mombasa Tour Direct name and `MTD` booking references.
+The interface uses a sunny Mombasa palette: sky blue (`#63C5F5`), cloud white (`#F8FCFF`), and scarlet red (`#C92A35`). Deeper blue (`#006B9E`) supports readable cloud-white labels; dark mode uses rich blue surfaces and cloud-white text. Editorial serif headings and functional sans-serif text remain consistent across pages. Some demonstration content retains the Mombasa Tour Direct name and `MTD` booking references.
 
 Light/dark mode is shared between the public website, guide preview, and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
 

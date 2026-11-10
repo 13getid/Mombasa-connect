@@ -44,7 +44,15 @@
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid var(--mc-border);
-  background: var(--mc-surface);
+  background: var(--mc-sky-strong);
+  color: var(--mc-cloud);
+}
+.guide-header .mc-theme-toggle {
+  color: var(--mc-cloud);
+  border-color: #f8fcff66;
+}
+.guide-header .mc-theme-toggle:hover {
+  background: #f8fcff22;
 }
 .guide-brand {
   display: flex;
@@ -64,7 +72,7 @@
   font-family: "Guide Manrope", sans-serif;
   font-size: 8px;
   margin-top: 6px;
-  color: var(--mc-text-muted);
+  color: var(--mc-cloud);
 }
 .guide-header > div,
 .guide-back {
