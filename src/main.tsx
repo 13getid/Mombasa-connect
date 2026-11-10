@@ -1,19 +1,19 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
-import CustomerPortal from "./CustomerPortal";
-import GuidePortal from "./GuidePortal";
-import { ThemeProvider } from "./theme";
-import "./theme.css";
+import App from "./public/App";
+import CustomerPortal from "./customer/CustomerPortal";
+import GuidePortal from "./guide/GuidePortal";
+import { ThemeProvider } from "./shared/theme/theme";
+import "./shared/theme/theme.css";
 
 const pathname = location.pathname.replace(/\/+$/, "");
 const isCustomerPortal = pathname === "/dashboard";
 const isGuidePortal = pathname === "/guide";
 const styles = isCustomerPortal
-  ? import("./portal.css")
+  ? import("./customer/portal.css")
   : isGuidePortal
-    ? import("./guide.css")
-    : import("./index.css");
+    ? import("./guide/guide.css")
+    : import("./public/index.css");
 
 styles.then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(

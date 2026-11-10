@@ -1,5 +1,5 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { ThemeToggle } from "./theme";
+import { ThemeToggle } from "../shared/theme/theme";
 
 type View =
   | "dashboard"

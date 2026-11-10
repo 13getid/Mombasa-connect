@@ -41,11 +41,11 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Loading states and a mobile navigation drawer.
 - Logout navigation back to the public website.
 
-### Guide Assignment Preview
+### Guide Portal
 
-- Separate `/guide` workspace with sample current assignments only.
-- Dates, times, visitor counts, meeting points, and expandable briefing notes.
-- Read-only sample data without customer account or payment management.
+- Separate `/guide` dashboard using the current guide component and its own stylesheet.
+- Assignment lists and details, daily schedule, availability, notifications, profile, and support screens.
+- Local demonstration status updates and forms; no live operations or backend persistence.
 - Responsive layout and shared light/dark mode.
 
 ### Shared Appearance
@@ -61,7 +61,7 @@ Light/dark mode is shared between the public website, guide preview, and all cus
 | `/` | Public landing page |
 | `/home` | Public landing page; destination after logout |
 | `/dashboard` | Customer portal |
-| `/guide` | Read-only guide assignment preview |
+| `/guide` | Guide portal demonstration |
 
 To open the customer demonstration:
 
@@ -72,7 +72,7 @@ To open the customer demonstration:
 
 The customer demo displays Amara Kamau's sample profile. Account forms validate input but do not create accounts, verify credentials, or send password-reset emails. The separate demo link does not sign you in.
 
-Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the read-only sample workspace. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
+Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the sample guide portal. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
 
 **The dashboard and guide routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
@@ -143,16 +143,24 @@ npm run format
 ```text
 src/
   main.tsx             Route selection and shared theme provider
-  App.tsx              Public website, tour previews, and guide onboarding
-  AccountAccess.tsx    Customer signup/login and approved-guide login forms
-  CustomerPortal.tsx   Customer dashboard and portal screens
-  GuidePortal.tsx      Read-only current guide assignments
-  index.css            Public website and account form styles
-  portal.css           Customer portal styles
-  guide.css            Guide workspace styles
-  theme.tsx            ThemeProvider, useTheme, and ThemeToggle
-  theme.css            Shared theme tokens and toggle styles
   vite-env.d.ts        Vite client types
+  public/
+    App.tsx            Public website, tour previews, and guide onboarding
+    index.css          Public website and account form styles
+  customer/
+    CustomerPortal.tsx Customer dashboard and portal screens
+    portal.css         Customer-only styles
+  guide/
+    GuidePortal.tsx    Guide dashboard and operational screens
+    guide.css          Guide-only styles
+  admin/
+    README.md          Reserved admin portal and integration guidance
+  shared/
+    auth/
+      AccountAccess.tsx Customer registration and login forms
+    theme/
+      theme.tsx        ThemeProvider, useTheme, and ThemeToggle
+      theme.css        Shared palette and toggle styles
 public/
   assets/              Logo and supporting assets
   images/              Experience photographs
@@ -160,7 +168,9 @@ public/
 .figma/                Figma Make configuration
 ```
 
-The entrypoint loads [portal styles](src/portal.css), [guide styles](src/guide.css), or [public styles](src/index.css) according to the route. [Shared theme styles](src/theme.css) are loaded for all pages.
+The entrypoint loads [customer styles](src/customer/portal.css), [guide styles](src/guide/guide.css), or [public styles](src/public/index.css) according to the route. [Shared theme styles](src/shared/theme/theme.css) are loaded for all pages. Customer and guide styles are never imported into each other's components.
+
+To edit a role, start in its folder: [customer](src/customer/CustomerPortal.tsx), [guide](src/guide/GuidePortal.tsx), or the [future admin area](src/admin/README.md). Keep new role-specific components and feature subfolders inside the owning role folder. Put code in `shared/` only when multiple roles actually reuse it.
 
 ## Extending the System
 
