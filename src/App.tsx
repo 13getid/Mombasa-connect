@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { ChevronDown, Compass, ShieldCheck, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Check, Compass } from "lucide-react";
 import { ThemeToggle } from "./theme";
+import { AccountAccess, type AccessMode } from "./AccountAccess";
 
 type Experience = {
   id: number;
@@ -122,31 +123,9 @@ const Arrow = ({ light = false, compact = false }: { light?: boolean; compact?: 
 
 function Header({ onBook, onLogin }: { onBook: () => void; onLogin: () => void }) {
   const [open, setOpen] = useState(false);
-  const [loginMenuOpen, setLoginMenuOpen] = useState(false);
-  const loginMenu = useRef<HTMLDivElement>(null);
-  const loginTrigger = useRef<HTMLButtonElement>(null);
   const close = () => {
     setOpen(false);
-    setLoginMenuOpen(false);
   };
-  useEffect(() => {
-    if (!loginMenuOpen) return;
-    const outside = (event: PointerEvent) => {
-      if (!loginMenu.current?.contains(event.target as Node)) setLoginMenuOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setLoginMenuOpen(false);
-        loginTrigger.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", escape);
-    };
-  }, [loginMenuOpen]);
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -187,64 +166,20 @@ function Header({ onBook, onLogin }: { onBook: () => void; onLogin: () => void }
           <a href="#inquiries" onClick={close}>
             Inquiries
           </a>
-          <div
-            className="login-role-control"
-            ref={loginMenu}
-            onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget as Node | null))
-                setLoginMenuOpen(false);
+          <button
+            className="main-nav-login"
+            type="button"
+            onClick={() => {
+              close();
+              onLogin();
             }}
           >
-            <button
-              className="main-nav-login"
-              type="button"
-              ref={loginTrigger}
-              aria-expanded={loginMenuOpen}
-              aria-controls="login-role-options"
-              onClick={() => setLoginMenuOpen(!loginMenuOpen)}
-            >
-              Log in <ChevronDown size={14} />
-            </button>
-            {loginMenuOpen && (
-              <div
-                className="login-role-options"
-                id="login-role-options"
-                aria-label="Choose your login"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    close();
-                    onLogin();
-                  }}
-                >
-                  <UserRound size={18} />
-                  <span>
-                    <strong>Customer</strong>
-                    <small>Bookings & dashboard</small>
-                  </span>
-                </button>
-                <button type="button" disabled>
-                  <ShieldCheck size={18} />
-                  <span>
-                    <strong>Admin</strong>
-                    <small>Coming soon</small>
-                  </span>
-                </button>
-                <button type="button" disabled>
-                  <Compass size={18} />
-                  <span>
-                    <strong>Tour Guide</strong>
-                    <small>Coming soon</small>
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
+            Log in
+          </button>
         </nav>
         <ThemeToggle />
         <button className="button button-primary header-cta" onClick={onBook}>
-          Book an experience
+          Create account
         </button>
       </div>
     </header>
@@ -391,14 +326,17 @@ function FeaturePhone() {
   );
 }
 
-function BookingModal({ selected, onClose }: { selected: Experience | null; onClose: () => void }) {
-  const [stage, setStage] = useState<"details" | "form" | "success">("details");
-  const [guests, setGuests] = useState(1);
-
+function BookingModal({
+  selected,
+  onClose,
+  onAccount,
+}: {
+  selected: Experience | null;
+  onClose: () => void;
+  onAccount: () => void;
+}) {
   useEffect(() => {
     if (selected) {
-      setStage("details");
-      setGuests(1);
       document.body.style.overflow = "hidden";
     }
     return () => {
@@ -407,10 +345,6 @@ function BookingModal({ selected, onClose }: { selected: Experience | null; onCl
   }, [selected]);
 
   if (!selected) return null;
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    setStage("success");
-  };
 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
@@ -424,151 +358,30 @@ function BookingModal({ selected, onClose }: { selected: Experience | null; onCl
         <button className="modal-close" onClick={onClose} aria-label="Close booking">
           ×
         </button>
-        {stage === "details" && (
-          <>
-            <div className="modal-image">
-              <img src={selected.image} alt="" />
-            </div>
-            <p className="eyebrow">Curated experience · {selected.code}</p>
-            <h2 id="booking-title">{selected.name}</h2>
-            <p>{selected.description}</p>
-            <div className="modal-facts">
-              <span>
-                <small>Duration</small>
-                {selected.duration}
-              </span>
-              <span>
-                <small>From</small>
-                {selected.price} / guest
-              </span>
-            </div>
-            <button className="button button-primary" onClick={() => setStage("form")}>
-              Continue to booking
-            </button>
-          </>
-        )}
-        {stage === "form" && (
-          <form className="booking-form" onSubmit={submit}>
-            <p className="eyebrow">Book direct</p>
-            <h2 id="booking-title">Reserve your place.</h2>
-            <label>
-              Full name
-              <input name="name" autoComplete="name" required placeholder="Your full name" />
-            </label>
-            <label>
-              Mobile number
-              <input
-                name="phone"
-                autoComplete="tel"
-                type="tel"
-                required
-                placeholder="+254 700 000 000"
-              />
-            </label>
-            <div className="form-row">
-              <label>
-                Preferred date
-                <input name="date" type="date" required />
-              </label>
-              <label>
-                Visitors
-                <select value={guests} onChange={(event) => setGuests(Number(event.target.value))}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((number) => (
-                    <option key={number}>{number}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="booking-total">
-              <span>Total</span>
-              <strong>KES {(selected.numericPrice * guests).toLocaleString()}</strong>
-            </div>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setStage("details")}
-              >
-                Back
-              </button>
-              <button className="button button-primary">Confirm booking</button>
-            </div>
-          </form>
-        )}
-        {stage === "success" && (
-          <div className="confirmation">
-            <span className="confirmation-mark">
-              <img src="/assets/logo.png" alt="" />
-            </span>
-            <p className="eyebrow">Booking confirmed</p>
-            <h2 id="booking-title">Your Mombasa story starts here.</h2>
-            <p>
-              Thank you. Your place on the {selected.name} is reserved. A confirmation has been sent
-              to your mobile.
-            </p>
-            <div className="reference">
-              <small>Booking reference</small>
-              <strong>MTD-25041</strong>
-            </div>
-            <button className="button button-primary" onClick={onClose}>
-              Return to experiences
-            </button>
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function LoginModal({ onClose, onGuest }: { onClose: () => void; onGuest: () => void }) {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
-
-  const submitPreview = (event: FormEvent) => {
-    event.preventDefault();
-    window.location.assign("/dashboard");
-  };
-
-  return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
-      <section
-        className="booking-modal login-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="login-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <button className="modal-close" onClick={onClose} aria-label="Close login">
-          ×
-        </button>
         <>
-          <p className="eyebrow">Client access · Preview</p>
-          <h2 id="login-title">Welcome back.</h2>
-          <p className="login-intro">
-            Open Amara's customer dashboard to manage her Mombasa Connect experiences.
-          </p>
-          <form className="booking-form login-form" onSubmit={submitPreview}>
-            <label>
-              Demo customer
-              <input name="email" type="email" readOnly value="amara.kamau@example.com" />
-            </label>
-            <p className="login-preview-note">
-              Demo access only. No password is needed. Real account sign-in is not connected yet.
-            </p>
-            <button type="submit" className="button button-primary">
-              Log in as Amara
-            </button>
-          </form>
-          <div className="login-guest">
-            <span>Just looking to book?</span>
-            <button className="button button-secondary" onClick={onGuest}>
-              Continue as guest
-            </button>
+          <div className="modal-image">
+            <img src={selected.image} alt="" />
           </div>
+          <p className="eyebrow">Curated experience · {selected.code}</p>
+          <h2 id="booking-title">{selected.name}</h2>
+          <p>{selected.description}</p>
+          <div className="modal-facts">
+            <span>
+              <small>Duration</small>
+              {selected.duration}
+            </span>
+            <span>
+              <small>From</small>
+              {selected.price} / guest
+            </span>
+          </div>
+          <p className="account-booking-note">
+            Create a customer account or log in before booking. Live reservations will be available
+            once account and booking services are connected.
+          </p>
+          <button className="button button-primary" onClick={onAccount}>
+            Create account or log in
+          </button>
         </>
       </section>
     </div>
@@ -577,8 +390,8 @@ function LoginModal({ onClose, onGuest }: { onClose: () => void; onGuest: () => 
 
 export default function App() {
   const [booking, setBooking] = useState<Experience | null>(null);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const startBooking = () => setBooking(experiences[0]);
+  const [accessMode, setAccessMode] = useState<AccessMode | null>(null);
+  const startBooking = () => setAccessMode("signup");
 
   const copyCode = async () => {
     try {
@@ -590,7 +403,7 @@ export default function App() {
 
   return (
     <div id="top">
-      <Header onBook={startBooking} onLogin={() => setLoginOpen(true)} />
+      <Header onBook={startBooking} onLogin={() => setAccessMode("signin")} />
       <main>
         <section className="hero section-shell">
           <div className="hero-copy">
@@ -765,6 +578,70 @@ export default function App() {
           </div>
         </section>
 
+        <section className="guide-onboarding" id="local-guides">
+          <div className="section-shell guide-onboarding-inner">
+            <div className="guide-onboarding-intro">
+              <p className="eyebrow">For the people who know this coast</p>
+              <h2>
+                Your local knowledge.
+                <br />
+                <em>Someone's unforgettable day.</em>
+              </h2>
+              <p>
+                Guide with Mombasa Connect. Share the stories, places and traditions you know best,
+                with experiences assigned by our local team.
+              </p>
+              <div className="guide-entry-actions">
+                <button className="button button-primary" onClick={() => setAccessMode("guide")}>
+                  Tour guide log in <ArrowRight size={17} />
+                </button>
+                <a className="text-link" href="#guide-qualifications">
+                  New to guiding with us? <ArrowRight size={16} />
+                </a>
+              </div>
+              <small>
+                Approved guides access their current assignments only. Customer bookings and account
+                settings stay separate.
+              </small>
+            </div>
+            <div className="guide-qualifications" id="guide-qualifications">
+              <span className="guide-section-icon">
+                <Compass size={25} />
+              </span>
+              <h3>What we're looking for</h3>
+              <p>Proposed onboarding criteria, subject to operator review:</p>
+              <ul>
+                {[
+                  "Strong knowledge of Mombasa's heritage, culture or coastal waters.",
+                  "Clear communication in English or Kiswahili, with other languages a plus.",
+                  "Relevant guiding credentials, permits or vessel qualifications where applicable.",
+                  "Safety awareness, reliable availability and respectful guest care.",
+                  "Identity and reference checks, plus first-aid training appropriate to the activity.",
+                ].map((item) => (
+                  <li key={item}>
+                    <Check size={16} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p>
+                Guide accounts are approved by the operator, not created through customer
+                registration. Final requirements depend on the activity and local regulations.
+              </p>
+              <a
+                className="text-link"
+                href="mailto:tours@mombasadirect.ke?subject=Guide%20onboarding%20enquiry"
+              >
+                Enquire about becoming a guide <ArrowRight size={16} />
+              </a>
+              <small>
+                Opens your email app using the site's existing contact address. The operator must
+                verify this address before launch.
+              </small>
+            </div>
+          </div>
+        </section>
+
         <section className="final-cta">
           <span className="cta-mark">
             <img src="/assets/logo.png" alt="" />
@@ -804,6 +681,7 @@ export default function App() {
               <a href="#experiences">Explore Tours</a>
               <a href="#story">The Story</a>
               <a href="#about">About</a>
+              <a href="#local-guides">For tour guides</a>
             </div>
             <div>
               <h4>Inquiries</h4>
@@ -827,16 +705,15 @@ export default function App() {
           </div>
         </div>
       </footer>
-      {loginOpen && (
-        <LoginModal
-          onClose={() => setLoginOpen(false)}
-          onGuest={() => {
-            setLoginOpen(false);
-            document.getElementById("experiences")?.scrollIntoView({ behavior: "smooth" });
-          }}
-        />
-      )}
-      <BookingModal selected={booking} onClose={() => setBooking(null)} />
+      {accessMode && <AccountAccess initialMode={accessMode} onClose={() => setAccessMode(null)} />}
+      <BookingModal
+        selected={booking}
+        onClose={() => setBooking(null)}
+        onAccount={() => {
+          setBooking(null);
+          setAccessMode("signup");
+        }}
+      />
     </div>
   );
 }

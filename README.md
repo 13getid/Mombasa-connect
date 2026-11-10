@@ -20,10 +20,11 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 - Branded landing page with local experience photography, tour descriptions, and pricing.
 - Sections covering the platform's story, local tourism, offline access, and inquiries.
-- Interactive booking form and simulated confirmation screen.
+- Public experience previews with account creation or login required before booking continuation.
 - Interactive USSD walkthrough demonstrating an offline booking concept.
-- Role-based login dropdown with working customer demo access.
-- Admin and Tour Guide options marked **Coming soon** and disabled.
+- Customer login, registration, and password recovery forms with frontend validation and explicit backend-unavailable feedback.
+- Separate approved-guide login entry, proposed qualifications, and an email enquiry link.
+- No public Admin login or role-selection dropdown.
 - Responsive navigation and light/dark theme switching.
 
 ### Customer Portal
@@ -40,11 +41,18 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Loading states and a mobile navigation drawer.
 - Logout navigation back to the public website.
 
+### Guide Assignment Preview
+
+- Separate `/guide` workspace with sample current assignments only.
+- Dates, times, visitor counts, meeting points, and expandable briefing notes.
+- Read-only sample data without customer account or payment management.
+- Responsive layout and shared light/dark mode.
+
 ### Shared Appearance
 
 The interface combines coastal blues, teal, warm neutrals, editorial serif headings, and functional sans-serif text. The portal uses Mombasa Connect branding; some demonstration content retains the Mombasa Tour Direct name and `MTD` booking references.
 
-Light/dark mode is shared between the public website and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
+Light/dark mode is shared between the public website, guide preview, and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
 
 ## Demo Access and Routes
 
@@ -53,17 +61,20 @@ Light/dark mode is shared between the public website and all customer portal scr
 | `/` | Public landing page |
 | `/home` | Public landing page; destination after logout |
 | `/dashboard` | Customer portal |
+| `/guide` | Read-only guide assignment preview |
 
 To open the customer demonstration:
 
 1. Open the public website.
 2. Select **Log in** in the navigation.
-3. Select **Customer**.
-4. Select **Log in as Amara**.
+3. Use **Create an account** for registration, or the login form for an existing account.
+4. For this frontend-only demonstration, select **Preview customer dashboard**.
 
-The demonstration email is `amara.kamau@example.com`. No password is required, and no credentials are verified.
+The customer demo displays Amara Kamau's sample profile. Account forms validate input but do not create accounts, verify credentials, or send password-reset emails. The separate demo link does not sign you in.
 
-**The dashboard route is not protected.** It can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
+Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the read-only sample workspace. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
+
+**The dashboard and guide routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
 ## Technology
 
@@ -131,11 +142,14 @@ npm run format
 
 ```text
 src/
-  main.tsx             Application entry, route selection, and theme provider
-  App.tsx              Public website, login dropdown, and demo booking flow
+  main.tsx             Route selection and shared theme provider
+  App.tsx              Public website, tour previews, and guide onboarding
+  AccountAccess.tsx    Customer signup/login and approved-guide login forms
   CustomerPortal.tsx   Customer dashboard and portal screens
-  index.css            Public website styles
-  portal.css           Customer portal styles and dark-mode overrides
+  GuidePortal.tsx      Read-only current guide assignments
+  index.css            Public website and account form styles
+  portal.css           Customer portal styles
+  guide.css            Guide workspace styles
   theme.tsx            ThemeProvider, useTheme, and ThemeToggle
   theme.css            Shared theme tokens and toggle styles
   vite-env.d.ts        Vite client types
@@ -143,18 +157,18 @@ public/
   assets/              Logo and supporting assets
   images/              Experience photographs
   fonts/               Local font assets
-.figma/                Figma Make project configuration
+.figma/                Figma Make configuration
 ```
 
-The entrypoint loads [portal styles](src/portal.css) only for the dashboard route and [public styles](src/index.css) for the public website. [Shared theme styles](src/theme.css) are loaded for both, preventing page-specific styles from overriding one another.
+The entrypoint loads [portal styles](src/portal.css), [guide styles](src/guide.css), or [public styles](src/index.css) according to the route. [Shared theme styles](src/theme.css) are loaded for all pages.
 
 ## Extending the System
 
-New pages rendered within the existing application root inherit `ThemeProvider`. Use `useTheme()` for theme-dependent behavior and `ThemeToggle` for a consistent switch; do not introduce a separate theme preference for each page.
+New pages within the application root inherit `ThemeProvider`. Use `useTheme()` and `ThemeToggle` instead of maintaining a separate theme preference.
 
-Use the shared `--mc-background`, `--mc-surface`, `--mc-surface-muted`, `--mc-text`, `--mc-text-muted`, `--mc-border`, `--mc-accent`, and `--mc-focus` CSS tokens for new screens. Existing portal styles also use their own ocean, sand, paper, and status tokens with dark-mode overrides.
+Use the shared `--mc-background`, `--mc-surface`, `--mc-surface-muted`, `--mc-text`, `--mc-text-muted`, `--mc-border`, `--mc-accent`, and `--mc-focus` CSS tokens for new screens. Existing portal styles also define their own themed tokens.
 
-New top-level pages require explicit route handling in [the application entrypoint](src/main.tsx). Admin and Tour Guide screens are not implemented or routed yet. Preserve their coming-soon state until their workflows are available.
+Register new top-level pages in [the application entrypoint](src/main.tsx). Admin access should remain outside the public navigation. Future guide APIs must scope assignments to the authenticated guide on the server, not just filter records in the browser.
 
 ## Integration and Launch Readiness
 
@@ -166,7 +180,7 @@ The following work remains before the application can serve real customers:
 - Implement payment collection, payment verification, cancellation handling, and refunds.
 - Connect profile, password, and photograph updates to secure account services.
 - Integrate Africa's Talking USSD/SMS services; the current walkthrough does not send SMS or dial a live booking service.
-- Implement Admin and Tour Guide portals.
+- Implement the private Admin portal and connect the guide assignment preview to authenticated, guide-scoped data.
 - Confirm operating contact details, prices, cancellation policies, and support promises with the business.
 - Add automated tests, API error handling, and production accessibility and security checks.
 
@@ -174,7 +188,7 @@ Some demonstration screens display success messages, booking confirmations, or s
 
 ## Deployment Notes
 
-Deploy the contents of `dist/` to a host that supports single-page applications. Configure unknown application paths such as `/dashboard` and `/home` to serve `index.html`, while preserving normal handling for static assets. Without this fallback, direct navigation or refresh may return a 404.
+Deploy the contents of `dist/` to a host that supports single-page applications. Configure application paths such as `/dashboard`, `/guide`, and `/home` to serve `index.html`, while preserving normal handling for static assets. Without this fallback, direct navigation or refresh may return a 404.
 
 No backend URL, API key, or authentication secret is required for the current frontend demonstration. Do not place service secrets in browser code or `VITE_*` variables, which are exposed to the client.
 
