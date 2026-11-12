@@ -1,8 +1,19 @@
 # Mombasa Connect
 
-A tourism discovery and booking frontend connecting visitors with locally guided experiences in Mombasa, Kenya. The application brings together a public travel website and a customer portal for exploring experiences and reviewing bookings.
+A tourism discovery and booking frontend connecting visitors with locally guided experiences in Mombasa, Kenya. The application brings together a public travel website, a customer portal, and a guide portal.
 
-**Current stage:** interactive frontend prototype. The public website and customer portal are connected, with responsive layouts and shared light/dark mode. Authentication, reservations, payments, and account updates are not connected to a backend.
+**Current stage:** interactive frontend prototype. The public website and customer and guide demonstrations have responsive layouts and shared light/dark mode. Authentication, reservations, payments, and account updates are not connected to a backend.
+
+## Progress Overview
+
+| Area | Current status |
+| --- | --- |
+| Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
+| Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
+| Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
+| Admin portal | Reserved for future implementation; no admin route or login. |
+| Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
+| Project setup | npm package renamed to `mombasa-connect`, with an npm lockfile for reproducible installs. |
 
 ## Experiences
 
@@ -97,7 +108,7 @@ FastAPI is an intended backend integration, not an installed or running part of 
 - Node.js 22.12 or newer within the Node.js 22 release line, compatible with Vite 8.
 - npm, included with Node.js.
 
-The optional [mise toolchain configuration](.mise.toml) specifies Node.js 22 and pnpm 10.34.3. The commands below use the included npm lockfile; avoid mixing package managers within the same dependency update.
+The optional [mise toolchain configuration](.mise.toml) specifies Node.js 22 and pnpm 10.34.3. This project uses npm and the included npm lockfile; avoid mixing package managers within the same dependency update.
 
 ### Install and Run
 
