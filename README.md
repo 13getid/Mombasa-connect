@@ -2,7 +2,7 @@
 
 A tourism discovery and booking frontend connecting visitors with locally guided experiences in Mombasa, Kenya. The application brings together a public travel website, customer and guide portals, and an admin dashboard prototype.
 
-**Current stage:** interactive frontend prototype. The public website and customer and guide demonstrations have responsive layouts and shared light/dark mode. Authentication, reservations, payments, and account updates are not connected to a backend.
+**Current stage:** interactive frontend prototype deployed on Render. The public website and customer and guide demonstrations have responsive layouts and shared light/dark mode. Authentication, reservations, payments, and account updates are not connected to a backend.
 
 ## Progress Overview
 
@@ -13,6 +13,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
 | Admin portal | `/admin` dashboard prototype with overview metrics, booking search, notifications, and experience summaries; demonstration data only. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
+| Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | npm package renamed to `mombasa-connect`, with an npm lockfile for reproducible installs. |
 
 ## Experiences
@@ -73,6 +74,14 @@ Light/dark mode is shared between the public website, guide preview, and all cus
 The browser page title is **Mombasa Connect**, configured in `.figma/make/site.json`. The public website, customer portal, guide portal, and admin dashboard use the shared `public/assets/logo.png` logo.
 
 ## Demo Access and Routes
+
+**Live site URL:** https://mombasa-connect.onrender.com
+
+Additional dashboard access instructions can be added here:
+
+- **Customer:** [Add access instructions]
+- **Guide:** [Add access instructions]
+- **Admin:** [Add access instructions]
 
 | Route | Purpose |
 | --- | --- |
@@ -189,9 +198,9 @@ public/
 .figma/                Figma Make configuration
 ```
 
-The entrypoint loads [customer styles](src/customer/portal.css), [guide styles](src/guide/guide.css), or [public styles](src/public/index.css) according to the route. [Shared theme styles](src/shared/theme/theme.css) are loaded for all pages. Customer and guide styles are never imported into each other's components.
+The entrypoint loads the component for the current route; each component imports its own [customer](src/customer/portal.css), [guide](src/guide/guide.css), [admin](src/admin/admin.css), or [public](src/public/index.css) styles. [Shared theme styles](src/shared/theme/theme.css) are loaded for all pages. Customer and guide styles are never imported into each other's components.
 
-To edit a role, start in its folder: [customer](src/customer/CustomerPortal.tsx), [guide](src/guide/GuidePortal.tsx), or the [future admin area](src/admin/README.md). Keep new role-specific components and feature subfolders inside the owning role folder. Put code in `shared/` only when multiple roles actually reuse it.
+To edit a role, start in its folder: [customer](src/customer/CustomerPortal.tsx), [guide](src/guide/GuidePortal.tsx), or [admin](src/admin/AdminPortal.tsx). Keep new role-specific components and feature subfolders inside the owning role folder. Put code in `shared/` only when multiple roles actually reuse it.
 
 ## Extending the System
 
@@ -217,9 +226,16 @@ The following work remains before the application can serve real customers:
 
 Some demonstration screens display success messages, booking confirmations, or support-response expectations. These are prototype interface states, not proof of a server action, delivered message, payment, or reservation. Do not enter real passwords or sensitive customer information into the demo forms.
 
-## Deployment Notes
+## Render Deployment and Updates
 
-Deploy the contents of `dist/` to a host that supports single-page applications. Configure application paths such as `/dashboard`, `/guide`, and `/home` to serve `index.html`, while preserving normal handling for static assets. Without this fallback, direct navigation or refresh may return a 404.
+The frontend is live on Render. For future updates:
+
+1. Make and verify changes locally with `npx tsc --noEmit` and `npm run build`.
+2. Commit and push the changes to the branch connected to the Render service.
+3. If automatic deploys are enabled, wait for the deployment; otherwise, trigger a manual deploy in the Render dashboard.
+4. Check the deployment logs and verify the updated site and relevant dashboard routes.
+
+The build command is `npm run build` and the generated frontend is in `dist/`. For a Render static site, configure a rewrite from `/*` to `/index.html` so direct navigation and refresh work for `/dashboard`, `/guide`, `/admin`, and `/home`. Check the Render service settings for the actual build, publish, and rewrite configuration.
 
 No backend URL, API key, or authentication secret is required for the current frontend demonstration. Do not place service secrets in browser code or `VITE_*` variables, which are exposed to the client.
 
