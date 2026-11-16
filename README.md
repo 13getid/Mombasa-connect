@@ -1,6 +1,6 @@
 # Mombasa Connect
 
-A tourism discovery and booking frontend connecting visitors with locally guided experiences in Mombasa, Kenya. The application brings together a public travel website, a customer portal, and a guide portal.
+A tourism discovery and booking frontend connecting visitors with locally guided experiences in Mombasa, Kenya. The application brings together a public travel website, customer and guide portals, and an admin dashboard prototype.
 
 **Current stage:** interactive frontend prototype. The public website and customer and guide demonstrations have responsive layouts and shared light/dark mode. Authentication, reservations, payments, and account updates are not connected to a backend.
 
@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Reserved for future implementation; no admin route or login. |
+| Admin portal | `/admin` dashboard prototype with overview metrics, booking search, notifications, and experience summaries; demonstration data only. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Project setup | npm package renamed to `mombasa-connect`, with an npm lockfile for reproducible installs. |
 
@@ -59,11 +59,18 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Local demonstration status updates and forms; no live operations or backend persistence.
 - Responsive layout and shared light/dark mode.
 
+### Admin Portal
+
+- Separate `/admin` dashboard with overview metrics, booking search, notifications, attention items, and popular experience summaries.
+- Demonstration data and preview-only actions; no backend integration, authentication, or access control.
+
 ### Shared Appearance
 
 The interface uses a sunny Mombasa palette: sky blue (`#63C5F5`), cloud white (`#F8FCFF`), and scarlet red (`#C92A35`). Deeper blue (`#006B9E`) supports readable cloud-white labels; dark mode uses rich blue surfaces and cloud-white text. Editorial serif headings and functional sans-serif text remain consistent across pages. Some demonstration content retains the Mombasa Tour Direct name and `MTD` booking references.
 
 Light/dark mode is shared between the public website, guide preview, and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
+
+The browser page title is **Mombasa Connect**, configured in `.figma/make/site.json`. The public website, customer portal, guide portal, and admin dashboard use the shared `public/assets/logo.png` logo.
 
 ## Demo Access and Routes
 
@@ -73,6 +80,7 @@ Light/dark mode is shared between the public website, guide preview, and all cus
 | `/home` | Public landing page; destination after logout |
 | `/dashboard` | Customer portal |
 | `/guide` | Guide portal demonstration |
+| `/admin` | Admin dashboard demonstration |
 
 To open the customer demonstration:
 
@@ -85,7 +93,7 @@ The customer demo displays Amara Kamau's sample profile. Account forms validate 
 
 Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the sample guide portal. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
 
-**The dashboard and guide routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
+**The dashboard, guide, and admin routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
 ## Technology
 
@@ -165,7 +173,9 @@ src/
     GuidePortal.tsx    Guide dashboard and operational screens
     guide.css          Guide-only styles
   admin/
-    README.md          Reserved admin portal and integration guidance
+    AdminPortal.tsx    Admin dashboard prototype
+    admin.css          Admin-only styles
+    README.md          Admin portal and integration guidance
   shared/
     auth/
       AccountAccess.tsx Customer registration and login forms
@@ -201,7 +211,7 @@ The following work remains before the application can serve real customers:
 - Implement payment collection, payment verification, cancellation handling, and refunds.
 - Connect profile, password, and photograph updates to secure account services.
 - Integrate Africa's Talking USSD/SMS services; the current walkthrough does not send SMS or dial a live booking service.
-- Implement the private Admin portal and connect the guide assignment preview to authenticated, guide-scoped data.
+- Add authentication and role-based access control for admin routes, then connect admin actions and guide assignments to authenticated, guide-scoped data.
 - Confirm operating contact details, prices, cancellation policies, and support promises with the business.
 - Add automated tests, API error handling, and production accessibility and security checks.
 
