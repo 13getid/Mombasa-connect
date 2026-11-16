@@ -86,7 +86,7 @@ function Sidebar({ onNavigate, onLogout, mobileNavOpen }: { onNavigate: (label: 
   return (
     <aside className={mobileNavOpen ? "admin-sidebar nav-open" : "admin-sidebar"}>
       <a className="admin-brand" href="/admin" aria-label="Mombasa Connect administration">
-        <span className="admin-brand-mark"><img src="/assets/ea4a6.svg" alt="" /></span>
+        <span className="admin-brand-mark"><img src="/assets/logo.png" alt="" /></span>
         <span><strong>Mombasa Connect</strong><small>Administration</small></span>
       </a>
       <nav aria-label="Administration navigation">
