@@ -1723,7 +1723,7 @@ footer {
     padding: 8px;
     border: 0;
     display: flex;
-    order: 2;
+    order: -1;
     flex-direction: column;
     justify-content: center;
     gap: 4px;
@@ -1879,7 +1879,8 @@ footer {
     letter-spacing: 1.2px;
   }
   .brand small {
-    display: none;
+    font-size: 9px;
+    letter-spacing: 2px;
   }
   .brand-mark {
     width: 38px;
