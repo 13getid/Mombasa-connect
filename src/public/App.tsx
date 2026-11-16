@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Check, Compass } from "lucide-react";
 import { ThemeToggle } from "../shared/theme/theme";
 import { AccountAccess, type AccessMode } from "../shared/auth/AccountAccess";
+import "./index.css";
 
 type Experience = {
   id: number;

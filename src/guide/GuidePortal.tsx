@@ -1,5 +1,6 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { ThemeToggle } from "../shared/theme/theme";
+import './guide.css';
 
 type View =
   | "dashboard"

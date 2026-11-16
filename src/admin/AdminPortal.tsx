@@ -1,3 +1,4 @@
+import './admin.css';
 import { useMemo, useState } from "react";
 import {
   Activity,
