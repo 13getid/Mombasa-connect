@@ -180,7 +180,7 @@ function Header({ onBook, onLogin }: { onBook: () => void; onLogin: () => void }
         </nav>
         <ThemeToggle />
         <button className="button button-primary header-cta" onClick={onBook}>
-          Create account
+          Book now
         </button>
       </div>
     </header>
