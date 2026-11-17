@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | `/admin` dashboard prototype with overview metrics, booking search, notifications, and experience summaries; demonstration data only. |
+| Admin portal | Connected Overview and Bookings Management screens with an interactive calendar, reservation filters, CSV exports, and temporary booking status changes; demonstration data only. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | npm package renamed to `mombasa-connect`, with an npm lockfile for reproducible installs. |
@@ -33,6 +33,7 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Branded landing page with local experience photography, tour descriptions, and pricing.
 - Sections covering the platform's story, local tourism, offline access, and inquiries.
 - Public experience previews with account creation or login required before booking continuation.
+- **Book now** navigation action opens customer registration before booking.
 - Interactive USSD walkthrough demonstrating an offline booking concept.
 - Customer login, registration, and password recovery forms with frontend validation and explicit backend-unavailable feedback.
 - Separate approved-guide login entry, proposed qualifications, and an email enquiry link.
@@ -62,8 +63,16 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 ### Admin Portal
 
-- Separate `/admin` dashboard with overview metrics, booking search, notifications, attention items, and popular experience summaries.
-- Demonstration data and preview-only actions; no backend integration, authentication, or access control.
+- Shared `/admin` shell with separate Overview and Bookings Management screens, active navigation, breadcrumbs, search, notifications, and responsive navigation.
+- Refreshed Overview with performance cards, booking activity and channel charts, an operations summary, recent bookings, popular experiences, and an upcoming-tours panel.
+- Interactive calendar with previous/next month controls and highlighted dates containing pending or confirmed sample bookings.
+- Selecting a calendar date opens Bookings Management filtered by experience date, including an empty state for dates without bookings.
+- Reservation filtering by status, search, tour, source, payment status, and experience date; clear filters to restore all sample reservations.
+- CSV export of the currently filtered reservations.
+- Temporary confirmation and cancellation actions, with shared booking statuses reflected in Overview records, scheduled calendar dates, and pending-booking counts.
+- Booking details, guide assignment, and other unfinished modules remain explicitly marked future-feature placeholders.
+- Booking changes survive navigation between the two screens but reset on reload. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
+- No backend integration, authentication, or access control.
 
 ### Shared Appearance
 
@@ -101,6 +110,8 @@ To open the customer demonstration:
 The customer demo displays Amara Kamau's sample profile. Account forms validate input but do not create accounts, verify credentials, or send password-reset emails. The separate demo link does not sign you in.
 
 Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the sample guide portal. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
+
+For the admin demonstration, open `/admin`. Use the sidebar or **View All Bookings** to switch to Bookings Management. Alternatively, select a calendar date to open date-filtered reservations. Both screens share sample booking records; reloading returns to Overview and restores the original sample data.
 
 **The dashboard, guide, and admin routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
@@ -182,8 +193,10 @@ src/
     GuidePortal.tsx    Guide dashboard and operational screens
     guide.css          Guide-only styles
   admin/
-    AdminPortal.tsx    Admin dashboard prototype
-    admin.css          Admin-only styles
+    AdminPortal.tsx    Admin shell, Overview, and shared sample bookings
+    admin.css          Admin shell and Overview styles
+    BookingsManagement.tsx Reservation filters, export, and demo status actions
+    bookings.css       Bookings Management styles
     README.md          Admin portal and integration guidance
   shared/
     auth/

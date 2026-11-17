@@ -316,12 +316,17 @@
 .overview-operations-items strong { display: block; margin-top: 4px; color: var(--ocean-deep); font-size: 17px; }
 .overview-calendar, .overview-upcoming { border: 1px solid var(--line); background: white; }
 .overview-calendar { padding: 18px; }
+.overview-calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.overview-calendar-controls { display: flex; gap: 4px; }
+.overview-calendar-controls button { width: 28px; height: 30px; border: 1px solid var(--line); color: var(--ocean); background: transparent; }
 .overview-calendar-heading h2 { color: var(--ocean-deep); font-family: "Playfair Display", Georgia, serif; font-size: 19px; }
 .overview-calendar-heading p { margin-top: 4px; color: var(--muted); font-size: 10px; }
 .overview-calendar-grid { margin-top: 15px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
-.overview-calendar-grid span { position: relative; min-height: 30px; display: grid; place-items: center; color: var(--ocean-deep); font-size: 10px; }
+.overview-calendar-grid span, .overview-calendar-grid button { position: relative; min-height: 30px; display: grid; place-items: center; color: var(--ocean-deep); font-size: 10px; }
+.overview-calendar-grid button { border: 0; border-radius: 50%; background: transparent; }
+.overview-calendar-grid button:hover { box-shadow: inset 0 0 0 1px var(--teal); }
 .overview-calendar-grid .overview-calendar-weekday { min-height: 23px; color: var(--muted); font-size: 9px; font-weight: 700; }
-.overview-calendar-grid span.scheduled { border-radius: 50%; color: var(--teal-dark); background: var(--success-soft); font-weight: 700; }
+.overview-calendar-grid button.scheduled { color: var(--teal-dark); background: var(--success-soft); font-weight: 700; }
 .overview-calendar-key { margin-top: 12px; display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
 .overview-upcoming-list { padding: 0 12px 12px; display: grid; gap: 8px; }
 .overview-upcoming-list article { min-width: 0; padding: 7px; display: grid; grid-template-columns: 58px minmax(0, 1fr) 20px; gap: 8px; align-items: center; background: #f4f8f9; }

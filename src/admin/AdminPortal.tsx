@@ -189,17 +189,32 @@ function OperationsStrip({ pending }: { pending: number }) {
   );
 }
 
-function CalendarWidget({ records }: { records: BookingRecord[] }) {
-  const scheduledDays = new Set(records.filter((record) => record.date.startsWith("2026-11-") && (record.status === "Pending" || record.status === "Confirmed")).map((record) => Number(record.date.slice(-2))));
+function CalendarWidget({ records, onSelectDate }: { records: BookingRecord[]; onSelectDate: (date: string) => void }) {
+  const [month, setMonth] = useState(() => new Date(2026, 10, 1));
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const monthLabel = month.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  const monthPrefix = `${year}-${String(monthIndex + 1).padStart(2, "0")}-`;
+  const scheduledDays = new Set(records.filter((record) => record.date.startsWith(monthPrefix) && (record.status === "Pending" || record.status === "Confirmed")).map((record) => Number(record.date.slice(-2))));
+  const offset = (month.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const cells = Math.ceil((offset + daysInMonth) / 7) * 7;
   return (
-    <section className="overview-calendar" aria-label="November 2026 demonstration tour calendar">
-      <div className="overview-calendar-heading"><h2>November 2026</h2><p>Demonstration tour schedule</p></div>
+    <section className="overview-calendar" aria-label={`${monthLabel} demonstration tour calendar`}>
+      <div className="overview-calendar-heading">
+        <div><h2 aria-live="polite">{monthLabel}</h2><p>Select a date to view bookings</p></div>
+        <div className="overview-calendar-controls">
+          <button type="button" aria-label="Previous month" onClick={() => setMonth(new Date(year, monthIndex - 1, 1))}>&lt;</button>
+          <button type="button" aria-label="Next month" onClick={() => setMonth(new Date(year, monthIndex + 1, 1))}>&gt;</button>
+        </div>
+      </div>
       <div className="overview-calendar-grid">
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span className="overview-calendar-weekday" key={day}>{day}</span>)}
-        {Array.from({ length: 42 }, (_, index) => {
-          const day = index - 5;
-          return day > 0 && day <= 30
-            ? <span key={index} className={scheduledDays.has(day) ? "scheduled" : ""} aria-label={`${day} November${scheduledDays.has(day) ? ", scheduled booking" : ""}`}>{day}</span>
+        {Array.from({ length: cells }, (_, index) => {
+          const day = index - offset + 1;
+          const date = `${monthPrefix}${String(day).padStart(2, "0")}`;
+          return day > 0 && day <= daysInMonth
+            ? <button type="button" key={index} className={scheduledDays.has(day) ? "scheduled" : ""} aria-label={`View bookings for ${formatBookingDate(date)}${scheduledDays.has(day) ? ", scheduled booking" : ""}`} onClick={() => onSelectDate(date)}>{day}</button>
             : <span key={index} aria-hidden="true" />;
         })}
       </div>
@@ -245,6 +260,7 @@ export default function AdminPortal() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState<"Overview" | "Bookings">("Overview");
   const [records, setRecords] = useState(initialBookings);
+  const [bookingDate, setBookingDate] = useState("");
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -261,6 +277,7 @@ export default function AdminPortal() {
     if (label === "Overview" || label === "Bookings") {
       setPage(label);
       setQuery("");
+      setBookingDate("");
       window.scrollTo({ top: 0 });
     } else {
       openFuture(label);
@@ -289,12 +306,12 @@ export default function AdminPortal() {
           <section className="popular-panel overview-popular"><div className="panel-heading"><div><h2>Popular Experiences</h2><p>Booking volume across published tours.</p></div><button className="panel-link" type="button" onClick={() => navigate("Tours & Experiences")}>View all <ArrowRight size={14} /></button></div><div className="popular-list">{experiences.map((experience) => <article key={experience.name}><div className="overview-popular-image"><img src={experience.image} alt="" /><StatusBadge status="Published" /></div><div><h3>{experience.name}</h3><p>{experience.bookings} bookings this period</p><b>{experience.price} <small>per guest</small></b></div></article>)}</div></section>
           </div>
           <aside className="overview-rail">
-            <CalendarWidget records={records} />
+            <CalendarWidget records={records} onSelectDate={(date) => { navigate("Bookings"); setBookingDate(date); }} />
             <UpcomingTours records={records} onView={() => navigate("Bookings")} />
             <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: 3, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Availability & Scheduling" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
           </aside>
           </section>
-          </> : <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} onPrototype={openFuture} />}
+          </> : <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onPrototype={openFuture} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}

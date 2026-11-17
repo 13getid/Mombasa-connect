@@ -26,19 +26,21 @@ export default function BookingsManagement({
   onRecordsChange,
   query,
   onQuery,
+  initialDate,
   onPrototype,
 }: {
   records: BookingRecord[];
   onRecordsChange: (records: BookingRecord[]) => void;
   query: string;
   onQuery: (query: string) => void;
+  initialDate: string;
   onPrototype: (label: string) => void;
 }) {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Bookings");
   const [tour, setTour] = useState("All Tours");
   const [source, setSource] = useState("All Sources");
   const [payment, setPayment] = useState("All Payments");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(initialDate);
 
   const filtered = records.filter((record) => {
     const searchText = Object.values(record).join(" ").toLowerCase();
