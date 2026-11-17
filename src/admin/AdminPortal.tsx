@@ -1,5 +1,6 @@
 import './admin.css';
 import { useMemo, useState } from "react";
+import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import {
   Activity,
   ArrowRight,
@@ -63,12 +64,15 @@ const kpis = [
   { label: "Revenue collected", value: "KES 486,500", support: "+8.4% compared with previous period", icon: CreditCard, tone: "positive" },
 ] as const;
 
-const bookings = [
-  { ref: "MTD-1024", customer: "Amina Hassan", experience: "Old Town Heritage Tour", date: "14 Nov 2026", source: "Website", amount: "KES 3,000", status: "Confirmed" },
-  { ref: "MTD-1023", customer: "James Mwangi", experience: "Tudor Creek Dhow Ride", date: "14 Nov 2026", source: "USSD", amount: "KES 4,500", status: "Pending" },
-  { ref: "MTD-1022", customer: "Sarah Kimani", experience: "Fort Jesus Experience", date: "15 Nov 2026", source: "Website", amount: "KES 2,000", status: "Confirmed" },
-  { ref: "MTD-1021", customer: "Daniel Otieno", experience: "Old Town Heritage Tour", date: "15 Nov 2026", source: "USSD", amount: "KES 3,000", status: "Pending" },
-  { ref: "MTD-1020", customer: "Grace Wanjiku", experience: "Tudor Creek Dhow Ride", date: "16 Nov 2026", source: "Website", amount: "KES 4,500", status: "Completed" },
+const initialBookings: BookingRecord[] = [
+  { ref: "MTD-1024", customer: "Amina Hassan", phone: "+254 712 340 118", experience: "Old Town Heritage Tour", date: "2026-11-14", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed" },
+  { ref: "MTD-1023", customer: "James Mwangi", phone: "+254 722 410 927", experience: "Tudor Creek Dhow Ride", date: "2026-11-14", guests: 3, source: "USSD", amount: 4500, payment: "Pending", status: "Pending" },
+  { ref: "MTD-1022", customer: "Sarah Kimani", phone: "+254 733 852 011", experience: "Fort Jesus Experience", date: "2026-11-15", guests: 2, source: "Website", amount: 2000, payment: "Paid", status: "Confirmed" },
+  { ref: "MTD-1021", customer: "Daniel Otieno", phone: "+254 701 774 209", experience: "Old Town Heritage Tour", date: "2026-11-15", guests: 2, source: "USSD", amount: 3000, payment: "Pending", status: "Pending" },
+  { ref: "MTD-1020", customer: "Grace Wanjiku", phone: "+254 710 932 460", experience: "Tudor Creek Dhow Ride", date: "2026-11-16", guests: 3, source: "Website", amount: 4500, payment: "Paid", status: "Completed" },
+  { ref: "MTD-1019", customer: "Peter Kamau", phone: "+254 745 220 191", experience: "Fort Jesus Experience", date: "2026-11-21", guests: 4, source: "Website", amount: 4000, payment: "Failed", status: "Rejected" },
+  { ref: "MTD-1018", customer: "Fatma Ali", phone: "+254 728 665 104", experience: "Old Town Heritage Tour", date: "2026-11-22", guests: 2, source: "USSD", amount: 3000, payment: "Refunded", status: "Cancelled" },
+  { ref: "MTD-1017", customer: "Brian Otieno", phone: "+254 719 306 841", experience: "Tudor Creek Dhow Ride", date: "2026-11-23", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed" },
 ];
 
 const experiences = [
@@ -83,7 +87,7 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
 }
 
-function Sidebar({ onNavigate, onLogout, mobileNavOpen }: { onNavigate: (label: string) => void; onLogout: () => void; mobileNavOpen: boolean }) {
+function Sidebar({ activeItem, onNavigate, onLogout, mobileNavOpen }: { activeItem: string; onNavigate: (label: string) => void; onLogout: () => void; mobileNavOpen: boolean }) {
   return (
     <aside className={mobileNavOpen ? "admin-sidebar nav-open" : "admin-sidebar"}>
       <a className="admin-brand" href="/admin" aria-label="Mombasa Connect administration">
@@ -95,7 +99,7 @@ function Sidebar({ onNavigate, onLogout, mobileNavOpen }: { onNavigate: (label: 
           <div className="admin-nav-group" key={group.label}>
             <p>{group.label}</p>
             {group.items.map(([label, Icon]) => (
-              <button key={label} type="button" className={label === "Overview" ? "active" : ""} onClick={() => label !== "Overview" && onNavigate(label)}>
+              <button key={label} type="button" className={label === activeItem ? "active" : ""} aria-current={label === activeItem ? "page" : undefined} onClick={() => onNavigate(label)}>
                 <Icon size={17} strokeWidth={1.7} /><span>{label}</span>
               </button>
             ))}
@@ -111,15 +115,15 @@ function Sidebar({ onNavigate, onLogout, mobileNavOpen }: { onNavigate: (label: 
   );
 }
 
-function Topbar({ query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
+function Topbar({ page, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { page: string; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
   const [profileOpen, setProfileOpen] = useState(false);
   return (
     <header className="admin-topbar">
       <button className="admin-mobile-menu" type="button" onClick={onToggleMenu} aria-label="Toggle navigation" aria-expanded={mobileNavOpen}><Menu size={19} /></button>
-      <div className="admin-breadcrumb"><span>Administration</span><i>/</i><b>Overview</b></div>
+      <div className="admin-breadcrumb"><span>Administration</span><i>/</i><b>{page}</b></div>
       <label className="admin-search">
         <Search size={17} />
-        <input value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search bookings, tours or customers..." />
+        <input aria-label="Search bookings, tours or customers" value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search bookings, tours or customers..." />
         {query && <button type="button" onClick={() => onQuery("")} aria-label="Clear search"><X size={15} /></button>}
       </label>
       <button className="admin-notification" type="button" onClick={onNotifications} aria-label="Open notifications"><Bell size={18} /><span>3</span></button>
@@ -169,6 +173,65 @@ function ChannelChart() {
   );
 }
 
+function OperationsStrip({ pending }: { pending: number }) {
+  const items = [
+    { label: "Pending bookings", value: pending, detail: "Sample reservations", tone: "amber" },
+    { label: "Active tours", value: 12, detail: "Published experiences", tone: "teal" },
+    { label: "Registered guides", value: 26, detail: "21 approved", tone: "ocean" },
+  ];
+  return (
+    <section className="overview-operations">
+      <div className="overview-operations-title"><span><Activity size={18} /></span><div><b>Operations at a glance</b><small>Demonstration data</small></div></div>
+      <div className="overview-operations-items">
+        {items.map((item) => <div key={item.label}><span><i className={item.tone} />{item.label}</span><strong>{item.value}</strong><small>{item.detail}</small></div>)}
+      </div>
+    </section>
+  );
+}
+
+function CalendarWidget({ records }: { records: BookingRecord[] }) {
+  const scheduledDays = new Set(records.filter((record) => record.date.startsWith("2026-11-") && (record.status === "Pending" || record.status === "Confirmed")).map((record) => Number(record.date.slice(-2))));
+  return (
+    <section className="overview-calendar" aria-label="November 2026 demonstration tour calendar">
+      <div className="overview-calendar-heading"><h2>November 2026</h2><p>Demonstration tour schedule</p></div>
+      <div className="overview-calendar-grid">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span className="overview-calendar-weekday" key={day}>{day}</span>)}
+        {Array.from({ length: 42 }, (_, index) => {
+          const day = index - 5;
+          return day > 0 && day <= 30
+            ? <span key={index} className={scheduledDays.has(day) ? "scheduled" : ""} aria-label={`${day} November${scheduledDays.has(day) ? ", scheduled booking" : ""}`}>{day}</span>
+            : <span key={index} aria-hidden="true" />;
+        })}
+      </div>
+      <div className="overview-calendar-key"><i /> Scheduled demo bookings</div>
+    </section>
+  );
+}
+
+function UpcomingTours({ records, onView }: { records: BookingRecord[]; onView: () => void }) {
+  const upcoming = records
+    .filter((record) => record.status === "Pending" || record.status === "Confirmed")
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 3);
+  return (
+    <section className="overview-upcoming">
+      <div className="panel-heading"><div><h2>Upcoming Tours</h2><p>Next demo departures</p></div><button className="panel-link" type="button" onClick={onView}>View bookings <ArrowRight size={14} /></button></div>
+      <div className="overview-upcoming-list">
+        {upcoming.map((record) => {
+          const experience = experiences.find((item) => item.name === record.experience);
+          return <article key={record.ref}>
+            {experience && <img src={experience.image} alt="" />}
+            <div><StatusBadge status={record.status} /><h3>{record.experience}</h3><p>{formatBookingDate(record.date)} · {record.guests} {record.guests === 1 ? "guest" : "guests"}</p></div>
+            <button type="button" onClick={onView} aria-label={`View bookings for ${record.experience}`}><ChevronRight size={16} /></button>
+          </article>;
+        })}
+        {upcoming.length === 0 && <p className="overview-upcoming-empty">No scheduled demo departures.</p>}
+      </div>
+    </section>
+  );
+}
+
 function NotificationPanel({ onClose }: { onClose: () => void }) {
   const items = [
     ["Booking requires review", "MTD-1023 was submitted through USSD.", "8 minutes ago"],
@@ -180,39 +243,62 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
 
 export default function AdminPortal() {
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState<"Overview" | "Bookings">("Overview");
+  const [records, setRecords] = useState(initialBookings);
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const filteredBookings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return bookings;
-    return bookings.filter((booking) => Object.values(booking).join(" ").toLowerCase().includes(normalized));
-  }, [query]);
+    const matches = normalized ? records.filter((booking) => Object.values(booking).join(" ").toLowerCase().includes(normalized)) : records;
+    return matches.slice(0, 5);
+  }, [query, records]);
+  const pendingBookings = records.filter((record) => record.status === "Pending").length;
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
+  const navigate = (label: string) => {
+    setMobileNavOpen(false);
+    if (label === "Overview" || label === "Bookings") {
+      setPage(label);
+      setQuery("");
+      window.scrollTo({ top: 0 });
+    } else {
+      openFuture(label);
+    }
+  };
   const createTour = () => setModal({ title: "Create a new tour.", description: "The complete Create Tour workflow will be designed in a later step. This overview prototype preserves the intended entry point.", isCreate: true });
 
   return (
     <div className="admin-app">
-      <Sidebar onNavigate={openFuture} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
-        <Topbar query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
+        <Topbar page={page} query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
         <main className="admin-content">
-          <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Monday</b><small>16 November 2026</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
-          <section className="kpi-section"><div className="section-label"><span>Key performance indicators</span><small>Demonstration data · Current period</small></div><div className="kpi-grid">{kpis.map(({ label, value, support, icon: Icon, tone }) => <article className="kpi-card" key={label}><div className="kpi-heading"><span>{label}</span><i><Icon size={17} /></i></div><strong className={value.length > 8 ? "compact" : ""}>{value}</strong><p className={tone}>{tone === "positive" && <ArrowRight size={12} />}{tone === "attention" && <TriangleAlert size={12} />}{support}</p></article>)}</div></section>
+          {page === "Overview" ? <>
+          <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Saturday</b><small>14 November 2026 · Demo</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
+          <section className="overview-layout">
+          <div className="overview-main">
+          <div className="section-label"><span>Platform performance</span><small>Illustrative totals · Sample bookings shown below</small></div>
+          <section className="overview-kpi-grid">{[kpis[0], kpis[4], kpis[5]].map(({ label, value, support, icon: Icon, tone }) => <article className="kpi-card" key={label}><div className="kpi-heading"><span>{label}</span><i><Icon size={17} /></i></div><strong className={value.length > 8 ? "compact" : ""}>{value}</strong><p className={tone}>{tone === "positive" && <ArrowRight size={12} />}{support}</p></article>)}</section>
           <section className="analytics-grid"><BookingChart period={period} onPeriod={setPeriod} /><ChannelChart /></section>
-          <section className="table-panel"><div className="panel-heading"><div><h2>Recent Bookings</h2><p>Latest reservations received across all booking channels.</p></div><button className="panel-link" type="button" onClick={() => openFuture("Bookings")}>View All Bookings <ArrowRight size={14} /></button></div>
-            <div className="admin-table-wrap"><table><thead><tr><th>Booking ref</th><th>Customer</th><th>Experience</th><th>Date</th><th>Source</th><th>Amount</th><th>Status</th></tr></thead><tbody>{filteredBookings.map((row) => <tr key={row.ref}><td><b>{row.ref}</b></td><td>{row.customer}</td><td>{row.experience}</td><td>{row.date}</td><td><span className={`source ${row.source.toLowerCase()}`}>{row.source}</span></td><td><b>{row.amount}</b></td><td><StatusBadge status={row.status} /></td></tr>)}</tbody></table></div>
+          <OperationsStrip pending={pendingBookings} />
+          <section className="table-panel"><div className="panel-heading"><div><h2>Recent Bookings</h2><p>Latest reservations received across all booking channels.</p></div><button className="panel-link" type="button" onClick={() => navigate("Bookings")}>View All Bookings <ArrowRight size={14} /></button></div>
+            <div className="admin-table-wrap"><table><thead><tr><th>Booking ref</th><th>Customer</th><th>Experience</th><th>Date</th><th>Source</th><th>Amount</th><th>Status</th></tr></thead><tbody>{filteredBookings.map((row) => <tr key={row.ref}><td><b>{row.ref}</b></td><td>{row.customer}</td><td>{row.experience}</td><td>{formatBookingDate(row.date)}</td><td><span className={`source ${row.source.toLowerCase()}`}>{row.source}</span></td><td><b>KES {row.amount.toLocaleString("en-KE")}</b></td><td><StatusBadge status={row.status} /></td></tr>)}</tbody></table></div>
             {filteredBookings.length === 0 && <div className="table-empty"><Search size={20} /><b>No matching bookings</b><span>Try a customer name, reference or experience.</span></div>}
           </section>
-          <section className="admin-bottom-grid">
-            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Operational items awaiting administrator action.</p></div></div><div className="attention-list">{[{ count: 18, text: "bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: 3, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Availability & Scheduling" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => openFuture(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
-            <section className="popular-panel"><div className="panel-heading"><div><h2>Popular Experiences</h2><p>Booking volume across published tours.</p></div></div><div className="popular-list">{experiences.map((experience) => <article key={experience.name}><img src={experience.image} alt="" /><div><h3>{experience.name}</h3><p>{experience.bookings} bookings</p></div><span><b>{experience.price}</b><StatusBadge status="Published" /></span></article>)}</div></section>
+          <section className="popular-panel overview-popular"><div className="panel-heading"><div><h2>Popular Experiences</h2><p>Booking volume across published tours.</p></div><button className="panel-link" type="button" onClick={() => navigate("Tours & Experiences")}>View all <ArrowRight size={14} /></button></div><div className="popular-list">{experiences.map((experience) => <article key={experience.name}><div className="overview-popular-image"><img src={experience.image} alt="" /><StatusBadge status="Published" /></div><div><h3>{experience.name}</h3><p>{experience.bookings} bookings this period</p><b>{experience.price} <small>per guest</small></b></div></article>)}</div></section>
+          </div>
+          <aside className="overview-rail">
+            <CalendarWidget records={records} />
+            <UpcomingTours records={records} onView={() => navigate("Bookings")} />
+            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: 3, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Availability & Scheduling" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
+          </aside>
           </section>
+          </> : <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} onPrototype={openFuture} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}
-      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : "Return to overview"}</button></section></div>}
+      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : `Return to ${page.toLowerCase()}`}</button></section></div>}
     </div>
   );
 }
