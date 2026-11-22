@@ -14,7 +14,9 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Admin portal | Connected Overview and Bookings Management screens with an interactive calendar, reservation filters, CSV exports, and temporary booking status changes; demonstration data only. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
-| Project setup | npm package renamed to `mombasa-connect`, with an npm lockfile for reproducible installs. |
+| Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
+
+The portals use sample data defined in their React components. Interactive changes are demonstration state, not saved bookings or account updates; the shared theme preference is stored in the browser.
 
 ## Experiences
 
@@ -86,12 +88,6 @@ The browser page title is **Mombasa Connect**, configured in `.figma/make/site.j
 
 **Live site URL:** https://mombasa-connect.onrender.com
 
-Additional dashboard access instructions can be added here:
-
-- **Customer:** [Add access instructions]
-- **Guide:** [Add access instructions]
-- **Admin:** [Add access instructions]
-
 | Route | Purpose |
 | --- | --- |
 | `/` | Public landing page |
@@ -113,7 +109,7 @@ Guide access is separate: visit **For tour guides** in the footer or the guide s
 
 For the admin demonstration, open `/admin`. Use the sidebar or **View All Bookings** to switch to Bookings Management. Alternatively, select a calendar date to open date-filtered reservations. Both screens share sample booking records; reloading returns to Overview and restores the original sample data.
 
-**The dashboard, guide, and admin routes are not protected.** They can be opened directly. Logout is a navigation action, not an authenticated-session invalidation. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
+**The dashboard, guide, and admin routes are not protected.** They can be opened directly. Customer and guide logout controls are demonstration navigation, not authenticated-session invalidation; secure admin logout is a future-feature placeholder. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
 ## Technology
 
@@ -133,19 +129,31 @@ FastAPI is an intended backend integration, not an installed or running part of 
 
 ### Requirements
 
+- Git.
 - Node.js 22.12 or newer within the Node.js 22 release line, compatible with Vite 8.
 - npm, included with Node.js.
 
 The optional [mise toolchain configuration](.mise.toml) specifies Node.js 22 and pnpm 10.34.3. This project uses npm and the included npm lockfile; avoid mixing package managers within the same dependency update.
 
-### Install and Run
+### Clone, Install and Run
 
-```bash
-npm ci
-npm run dev
-```
+1. Clone the repository and enter its directory:
 
-The configured development URL is `http://localhost:8443`. Vite uses the `PORT` environment variable when provided and is configured to fail if the selected port is occupied.
+   ```bash
+   git clone https://github.com/13getid/Mombasa-connect.git
+   cd Mombasa-connect
+   ```
+
+2. Install the dependencies from the lockfile and start the development server:
+
+   ```bash
+   npm ci
+   npm run dev
+   ```
+
+3. Open `http://localhost:8443` in your browser. The public page is available at `/`; the demo portals are available directly at `/dashboard`, `/guide`, and `/admin`.
+
+Vite uses the `PORT` environment variable when provided and is configured to fail if the selected port is occupied. No backend, environment variables, or credentials are required for the frontend demo.
 
 The logo and experience photos are stored directly in Git, so they are available after a normal clone without Git LFS. Other file types may still use the repository's Git LFS rules.
 
@@ -209,7 +217,6 @@ src/
 public/
   assets/              Logo and supporting assets
   images/              Experience photographs
-  fonts/               Local font assets
 .figma/                Figma Make configuration
 ```
 
