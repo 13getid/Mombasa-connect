@@ -147,6 +147,8 @@ npm run dev
 
 The configured development URL is `http://localhost:8443`. Vite uses the `PORT` environment variable when provided and is configured to fail if the selected port is occupied.
 
+The logo and experience photos are stored directly in Git, so they are available after a normal clone without Git LFS. Other file types may still use the repository's Git LFS rules.
+
 To run on the port used during recent local development:
 
 ```bash

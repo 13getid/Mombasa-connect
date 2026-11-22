@@ -1,2 +1,5 @@
 # AgentPlat packages this default favicon directly from source without LFS hydration.
 favicon.png -filter -diff -merge -text
+# Keep the website's images available in a normal clone without Git LFS.
+assets/logo.png -filter -diff -merge -text
+images/*.jpg -filter -diff -merge -text
