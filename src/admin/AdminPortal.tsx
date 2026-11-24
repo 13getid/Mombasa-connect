@@ -1,6 +1,7 @@
 import './admin.css';
 import { useMemo, useState } from "react";
 import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
+import { ThemeToggle } from "../shared/theme/theme";
 import {
   Activity,
   ArrowRight,
@@ -126,6 +127,7 @@ function Topbar({ page, query, onQuery, onNotifications, onToggleMenu, mobileNav
         <input aria-label="Search bookings, tours or customers" value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search bookings, tours or customers..." />
         {query && <button type="button" onClick={() => onQuery("")} aria-label="Clear search"><X size={15} /></button>}
       </label>
+      <ThemeToggle />
       <button className="admin-notification" type="button" onClick={onNotifications} aria-label="Open notifications"><Bell size={18} /><span>3</span></button>
       <div className="admin-profile-control">
         <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen}>
