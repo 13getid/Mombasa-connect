@@ -28,6 +28,7 @@ export default function BookingsManagement({
   onQuery,
   initialDate,
   onPrototype,
+  onViewBooking,
 }: {
   records: BookingRecord[];
   onRecordsChange: (records: BookingRecord[]) => void;
@@ -35,6 +36,7 @@ export default function BookingsManagement({
   onQuery: (query: string) => void;
   initialDate: string;
   onPrototype: (label: string) => void;
+  onViewBooking: (ref: string) => void;
 }) {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Bookings");
   const [tour, setTour] = useState("All Tours");
@@ -144,7 +146,7 @@ export default function BookingsManagement({
                 <td><span className={`admin-status ${record.status.toLowerCase()}`}>{record.status}</span></td>
                 <td><details className="booking-actions"><summary aria-label={`Actions for ${record.ref}`}>Actions</summary>
                   <div>
-                    <button type="button" onClick={() => onPrototype(`Booking Details - ${record.ref}`)}>View Booking</button>
+                    <button type="button" onClick={() => onViewBooking(record.ref)}>View Booking</button>
                     {record.status === "Pending" && <button type="button" onClick={() => updateStatus(record.ref, "Confirmed")}>Confirm Booking</button>}
                     {(record.status === "Pending" || record.status === "Confirmed") && <>
                       <button type="button" onClick={() => onPrototype(`Assign Guide - ${record.ref}`)}>Assign Guide</button>

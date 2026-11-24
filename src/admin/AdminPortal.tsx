@@ -1,6 +1,7 @@
 import './admin.css';
 import { useMemo, useState } from "react";
 import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
+import BookingDetails from "./BookingDetails";
 import { ThemeToggle } from "../shared/theme/theme";
 import {
   Activity,
@@ -83,6 +84,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string; isCreate?: boolean } | null;
+type AdminPage = "Overview" | "Bookings" | "BookingDetails";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -116,12 +118,12 @@ function Sidebar({ activeItem, onNavigate, onLogout, mobileNavOpen }: { activeIt
   );
 }
 
-function Topbar({ page, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { page: string; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
+function Topbar({ page, detail, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { page: string; detail?: string; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
   const [profileOpen, setProfileOpen] = useState(false);
   return (
     <header className="admin-topbar">
       <button className="admin-mobile-menu" type="button" onClick={onToggleMenu} aria-label="Toggle navigation" aria-expanded={mobileNavOpen}><Menu size={19} /></button>
-      <div className="admin-breadcrumb"><span>Administration</span><i>/</i><b>{page}</b></div>
+      <div className="admin-breadcrumb"><span>Administration</span><i>/</i>{detail ? <><span>{page}</span><i>/</i><b>{detail}</b></> : <b>{page}</b>}</div>
       <label className="admin-search">
         <Search size={17} />
         <input aria-label="Search bookings, tours or customers" value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search bookings, tours or customers..." />
@@ -260,8 +262,9 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
 
 export default function AdminPortal() {
   const [query, setQuery] = useState("");
-  const [page, setPage] = useState<"Overview" | "Bookings">("Overview");
+  const [page, setPage] = useState<AdminPage>("Overview");
   const [records, setRecords] = useState(initialBookings);
+  const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
   const [bookingDate, setBookingDate] = useState("");
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
@@ -278,6 +281,7 @@ export default function AdminPortal() {
     setMobileNavOpen(false);
     if (label === "Overview" || label === "Bookings") {
       setPage(label);
+      setSelectedBookingRef(null);
       setQuery("");
       setBookingDate("");
       window.scrollTo({ top: 0 });
@@ -285,13 +289,20 @@ export default function AdminPortal() {
       openFuture(label);
     }
   };
+  const viewBooking = (ref: string) => {
+    setMobileNavOpen(false);
+    setSelectedBookingRef(ref);
+    setPage("BookingDetails");
+    setQuery("");
+    window.scrollTo({ top: 0 });
+  };
   const createTour = () => setModal({ title: "Create a new tour.", description: "The complete Create Tour workflow will be designed in a later step. This overview prototype preserves the intended entry point.", isCreate: true });
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "BookingDetails" ? "Bookings" : page} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
-        <Topbar page={page} query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
+        <Topbar page={page === "BookingDetails" ? "Bookings" : page} detail={page === "BookingDetails" ? selectedBookingRef ?? "Booking" : undefined} query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
         <main className="admin-content">
           {page === "Overview" ? <>
           <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Saturday</b><small>14 November 2026 · Demo</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
@@ -313,11 +324,13 @@ export default function AdminPortal() {
             <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: 3, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Availability & Scheduling" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
           </aside>
           </section>
-          </> : <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onPrototype={openFuture} />}
+          </> : page === "Bookings"
+            ? <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onPrototype={openFuture} onViewBooking={viewBooking} />
+            : <BookingDetails records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onPrototype={openFuture} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}
-      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : `Return to ${page.toLowerCase()}`}</button></section></div>}
+      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : `Return to ${page === "BookingDetails" ? "booking details" : page.toLowerCase()}`}</button></section></div>}
     </div>
   );
 }
