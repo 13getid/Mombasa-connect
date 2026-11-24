@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Connected Overview and Bookings Management screens with an interactive calendar, reservation filters, CSV exports, and temporary booking status changes; demonstration data only. |
+| Admin portal | Connected Overview, Bookings Management, Booking Details, and Guide Assignment screens with the shared light/dark theme, an interactive calendar, reservation filters, CSV exports, and temporary booking status and guide-assignment changes; demonstration data only. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
@@ -65,22 +65,24 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 ### Admin Portal
 
-- Shared `/admin` shell with separate Overview and Bookings Management screens, active navigation, breadcrumbs, search, notifications, and responsive navigation.
+- Shared `/admin` shell with Overview, Bookings Management, Booking Details, and Guide Assignment screens, active navigation, breadcrumbs, search, notifications, the shared light/dark theme toggle, and responsive navigation.
 - Refreshed Overview with performance cards, booking activity and channel charts, an operations summary, recent bookings, popular experiences, and an upcoming-tours panel.
 - Interactive calendar with previous/next month controls and highlighted dates containing pending or confirmed sample bookings.
 - Selecting a calendar date opens Bookings Management filtered by experience date, including an empty state for dates without bookings.
 - Reservation filtering by status, search, tour, source, payment status, and experience date; clear filters to restore all sample reservations.
-- CSV export of the currently filtered reservations.
+- CSV export of the currently filtered reservations, including each reservation's assigned guide.
 - Temporary confirmation and cancellation actions, with shared booking statuses reflected in Overview records, scheduled calendar dates, and pending-booking counts.
-- Booking details, guide assignment, and other unfinished modules remain explicitly marked future-feature placeholders.
-- Booking changes survive navigation between the two screens but reset on reload. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
+- Booking Details screen opened from any reservation, showing customer, experience, payment, booking source, guide assignment, and a demonstration timeline; fields missing from the demo data are clearly labelled, and payment status stays separate from booking status.
+- Guide Assignment for pending and confirmed bookings: one primary guide per booking, selected from demonstration guide records with explicit confirmation for assignment, replacement, and removal. Only approved demo guides are assignable; completed, cancelled, and rejected bookings are locked.
+- Tours management, guide management, and other unfinished modules remain explicitly marked future-feature placeholders.
+- Booking and guide-assignment changes survive navigation between admin screens but reset on reload. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
 - No backend integration, authentication, or access control.
 
 ### Shared Appearance
 
 The interface uses a sunny Mombasa palette: sky blue (`#63C5F5`), cloud white (`#F8FCFF`), and scarlet red (`#C92A35`). Deeper blue (`#006B9E`) supports readable cloud-white labels; dark mode uses rich blue surfaces and cloud-white text. Editorial serif headings and functional sans-serif text remain consistent across pages. Some demonstration content retains the Mombasa Tour Direct name and `MTD` booking references.
 
-Light/dark mode is shared between the public website, guide preview, and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
+Light/dark mode is shared between the public website, guide preview, admin dashboard, and all customer portal screens, including support. The preference is saved under `mombasa-connect-theme` in browser local storage and synchronized between tabs. If browser storage is unavailable, the toggle still works for the mounted application.
 
 The browser page title is **Mombasa Connect**, configured in `.figma/make/site.json`. The public website, customer portal, guide portal, and admin dashboard use the shared `public/assets/logo.png` logo.
 
@@ -107,7 +109,7 @@ The customer demo displays Amara Kamau's sample profile. Account forms validate 
 
 Guide access is separate: visit **For tour guides** in the footer or the guide section on the landing page, then choose **Tour guide log in**. **Preview guide assignments** opens the sample guide portal. Live guides will require operator-approved accounts. Proposed qualifications are subject to review and are not legal or licensing advice.
 
-For the admin demonstration, open `/admin`. Use the sidebar or **View All Bookings** to switch to Bookings Management. Alternatively, select a calendar date to open date-filtered reservations. Both screens share sample booking records; reloading returns to Overview and restores the original sample data.
+For the admin demonstration, open `/admin`. Use the sidebar or **View All Bookings** to switch to Bookings Management. Alternatively, select a calendar date to open date-filtered reservations. From a reservation's **Actions** menu, **View Booking** opens Booking Details and **Assign Guide** opens the Guide Assignment screen. All screens share the same sample booking records; reloading returns to Overview and restores the original sample data.
 
 **The dashboard, guide, and admin routes are not protected.** They can be opened directly. Customer and guide logout controls are demonstration navigation, not authenticated-session invalidation; secure admin logout is a future-feature placeholder. Portal sections are managed with React state under `/dashboard`; they do not have individual URLs, and refreshing returns to the dashboard view.
 
@@ -207,6 +209,11 @@ src/
     admin.css          Admin shell and Overview styles
     BookingsManagement.tsx Reservation filters, export, and demo status actions
     bookings.css       Bookings Management styles
+    BookingDetails.tsx Single-reservation record with guide panel and demo timeline
+    booking-details.css Booking Details styles
+    GuideAssignment.tsx Primary-guide selection, replacement, and removal
+    guide-assignment.css Guide Assignment styles
+    guides.ts          Demonstration guide records and lookup helpers
     README.md          Admin portal and integration guidance
   shared/
     auth/
