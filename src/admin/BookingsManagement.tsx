@@ -70,7 +70,7 @@ export default function BookingsManagement({
   const exportRows = () => {
     const rows = [
       ["Booking Reference", "Customer", "Phone", "Experience", "Experience Date", "Guests", "Source", "Amount (KES)", "Payment", "Status", "Assigned Guide"],
-      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status, findGuide(record.assignedGuideId)?.name ?? "Unassigned"]),
+      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status, record.assignedGuideId ? findGuide(record.assignedGuideId)?.name ?? "Unknown guide" : "Unassigned"]),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));

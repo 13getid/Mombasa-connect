@@ -188,13 +188,21 @@ export default function BookingDetails({
               </div>
             ) : booking.assignedGuideId ? (
               <div className="booking-guide-assigned">
-                <p className="booking-guide-missing"><CircleAlert size={14} /> The assigned guide record ({booking.assignedGuideId}) no longer exists in the demo data.</p>
-                {canCancel && (
+                <p className="booking-guide-missing"><CircleAlert size={14} /> The assigned guide record ({booking.assignedGuideId}) cannot be found in the demo data. Clearing the assignment will remove this invalid guide reference.</p>
+                {canCancel && (confirmingRemove ? (
+                  <div className="booking-guide-remove-confirm">
+                    <p>Clear the invalid guide reference ({booking.assignedGuideId}) from {booking.ref}? The booking will become unassigned.</p>
+                    <div>
+                      <button className="booking-danger-button" type="button" onClick={removeGuide}>Confirm Clear</button>
+                      <button className="booking-outline-button" type="button" onClick={() => setConfirmingRemove(false)}>Keep Reference</button>
+                    </div>
+                  </div>
+                ) : (
                   <div className="booking-guide-actions">
                     <button type="button" className="booking-outline-button" onClick={onAssignGuide}>Assign a New Guide</button>
-                    <button type="button" className="booking-outline-button" onClick={removeGuide}>Clear Assignment</button>
+                    <button type="button" className="booking-outline-button" onClick={() => setConfirmingRemove(true)}>Clear Assignment</button>
                   </div>
-                )}
+                ))}
               </div>
             ) : (
               <div className="booking-guide-empty">
