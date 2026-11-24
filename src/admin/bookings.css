@@ -21,7 +21,8 @@
 .booking-search input { height: 100%; padding-left: 0; border: 0; background: transparent; }
 .clear-filters { min-height: 40px; padding: 0 6px; border: 0; color: var(--teal-dark); background: transparent; font-size: 10px; font-weight: 700; white-space: nowrap; text-transform: uppercase; }
 .reservations-panel { min-width: 0; border: 1px solid var(--line); background: var(--panel); }
-.bookings-table-wrap table { min-width: 1100px; }
+.bookings-table-wrap table { min-width: 1220px; }
+.booking-guide-unassigned { color: var(--muted); font-style: italic; }
 .booking-customer-phone { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 .booking-payment { padding: 4px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
 .payment-paid { color: var(--paid-strong); background: var(--paid-soft); }

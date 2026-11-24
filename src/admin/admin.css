@@ -112,6 +112,7 @@
 .admin-topbar { position: sticky; z-index: 20; top: 0; height: 76px; padding: 0 32px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 22px; background: color-mix(in srgb, var(--mc-surface) 94%, transparent); backdrop-filter: blur(12px); }
 .admin-breadcrumb { display: flex; align-items: center; gap: 8px; flex: none; font-size: 12px; }
 .admin-breadcrumb span, .admin-breadcrumb i { color: var(--muted); font-style: normal; }
+.admin-breadcrumb-part { display: inline-flex; gap: 8px; }
 .admin-breadcrumb b { color: var(--ocean-deep); font-weight: 600; }
 .admin-search { position: relative; width: min(36vw, 430px); height: 40px; margin-left: auto; border: 1px solid var(--line); display: flex; align-items: center; gap: 10px; color: var(--muted); background: var(--mc-surface); }
 .admin-search > svg { margin-left: 13px; flex: none; }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, Clock3, Download, Search, TicketCheck, X } from "lucide-react";
+import { findGuide } from "./guides";
 import "./bookings.css";
 
 export type BookingRecord = {
@@ -13,6 +14,7 @@ export type BookingRecord = {
   amount: number;
   payment: "Paid" | "Pending" | "Failed" | "Refunded";
   status: "Pending" | "Confirmed" | "Completed" | "Cancelled" | "Rejected";
+  assignedGuideId: string | null;
 };
 
 const statuses = ["All Bookings", "Pending", "Confirmed", "Completed", "Cancelled", "Rejected"] as const;
@@ -27,16 +29,16 @@ export default function BookingsManagement({
   query,
   onQuery,
   initialDate,
-  onPrototype,
   onViewBooking,
+  onAssignGuide,
 }: {
   records: BookingRecord[];
   onRecordsChange: (records: BookingRecord[]) => void;
   query: string;
   onQuery: (query: string) => void;
   initialDate: string;
-  onPrototype: (label: string) => void;
   onViewBooking: (ref: string) => void;
+  onAssignGuide: (ref: string) => void;
 }) {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Bookings");
   const [tour, setTour] = useState("All Tours");
@@ -67,8 +69,8 @@ export default function BookingsManagement({
   };
   const exportRows = () => {
     const rows = [
-      ["Booking Reference", "Customer", "Phone", "Experience", "Experience Date", "Guests", "Source", "Amount (KES)", "Payment", "Status"],
-      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status]),
+      ["Booking Reference", "Customer", "Phone", "Experience", "Experience Date", "Guests", "Source", "Amount (KES)", "Payment", "Status", "Assigned Guide"],
+      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status, findGuide(record.assignedGuideId)?.name ?? "Unassigned"]),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -134,7 +136,7 @@ export default function BookingsManagement({
         </div>
         <div className="admin-table-wrap bookings-table-wrap">
           <table>
-            <thead><tr><th>Booking reference</th><th>Customer</th><th>Tour / Experience</th><th>Experience date</th><th>Guests</th><th>Source</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Booking reference</th><th>Customer</th><th>Tour / Experience</th><th>Experience date</th><th>Guests</th><th>Source</th><th>Amount</th><th>Payment</th><th>Status</th><th>Guide</th><th>Actions</th></tr></thead>
             <tbody>{filtered.map((record) => (
               <tr key={record.ref}>
                 <td><b>{record.ref}</b></td>
@@ -144,12 +146,13 @@ export default function BookingsManagement({
                 <td><b>KES {record.amount.toLocaleString("en-KE")}</b></td>
                 <td><span className={`booking-payment payment-${record.payment.toLowerCase()}`}>{record.payment}</span></td>
                 <td><span className={`admin-status ${record.status.toLowerCase()}`}>{record.status}</span></td>
+                <td>{record.assignedGuideId ? findGuide(record.assignedGuideId)?.name ?? "Unknown guide" : <span className="booking-guide-unassigned">Unassigned</span>}</td>
                 <td><details className="booking-actions"><summary aria-label={`Actions for ${record.ref}`}>Actions</summary>
                   <div>
                     <button type="button" onClick={() => onViewBooking(record.ref)}>View Booking</button>
                     {record.status === "Pending" && <button type="button" onClick={() => updateStatus(record.ref, "Confirmed")}>Confirm Booking</button>}
                     {(record.status === "Pending" || record.status === "Confirmed") && <>
-                      <button type="button" onClick={() => onPrototype(`Assign Guide - ${record.ref}`)}>Assign Guide</button>
+                      <button type="button" onClick={() => onAssignGuide(record.ref)}>Assign Guide</button>
                       <button type="button" onClick={() => updateStatus(record.ref, "Cancelled")}>Cancel Booking</button>
                     </>}
                   </div>

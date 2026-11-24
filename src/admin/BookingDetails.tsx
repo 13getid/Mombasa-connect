@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   Check,
+  CircleAlert,
   Clock3,
   Compass,
   CreditCard,
@@ -10,10 +11,12 @@ import {
   Smartphone,
   TicketCheck,
   UserRound,
+  UserRoundCheck,
   Users,
   X,
 } from "lucide-react";
 import { formatBookingDate, type BookingRecord } from "./BookingsManagement";
+import { findGuide, guideInitials } from "./guides";
 import "./booking-details.css";
 
 const missingValue = <span className="booking-field-missing">Not recorded in demo data</span>;
@@ -32,14 +35,15 @@ export default function BookingDetails({
   bookingRef,
   onRecordsChange,
   onBack,
-  onPrototype,
+  onAssignGuide,
 }: {
   records: BookingRecord[];
   bookingRef: string;
   onRecordsChange: (records: BookingRecord[]) => void;
   onBack: () => void;
-  onPrototype: (label: string) => void;
+  onAssignGuide: () => void;
 }) {
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
   const booking = records.find((record) => record.ref === bookingRef);
 
   if (!booking) {
@@ -61,9 +65,15 @@ export default function BookingDetails({
   };
   const canConfirm = booking.status === "Pending";
   const canCancel = booking.status === "Pending" || booking.status === "Confirmed";
+  const assignedGuide = findGuide(booking.assignedGuideId);
+  const removeGuide = () => {
+    onRecordsChange(records.map((record) => record.ref === booking.ref ? { ...record, assignedGuideId: null } : record));
+    setConfirmingRemove(false);
+  };
   const SourceIcon = booking.source === "USSD" ? Smartphone : Globe;
   const timeline = [
     { title: "Booking received", detail: `Submitted through the ${booking.source} channel with reference ${booking.ref}.`, icon: TicketCheck },
+    ...(assignedGuide ? [{ title: "Guide assigned", detail: `${assignedGuide.name} is the primary guide for this experience.`, icon: UserRoundCheck }] : []),
     booking.status === "Pending"
       ? { title: "Awaiting review", detail: "This reservation is pending administrator action.", icon: Clock3 }
       : { title: `Booking ${booking.status.toLowerCase()}`, detail: "Current status of this reservation.", icon: booking.status === "Confirmed" || booking.status === "Completed" ? Check : X },
@@ -147,13 +157,55 @@ export default function BookingDetails({
           </section>
 
           <section className="booking-panel">
-            <div className="panel-heading"><div><h2>Guide Assignment</h2><p>Guides are assigned by administrators.</p></div><Users size={17} /></div>
-            <div className="booking-guide-empty">
-              <span><Users size={17} /></span>
-              <b>No guide assigned yet</b>
-              <p>This reservation has not been matched with an approved guide.</p>
-              {canCancel && <button type="button" className="booking-outline-button" onClick={() => onPrototype(`Assign Guide - ${booking.ref}`)}>Assign Guide</button>}
-            </div>
+            <div className="panel-heading"><div><h2>Guide Assignment</h2><p>One primary guide per booking, assigned by administrators.</p></div><Users size={17} /></div>
+            {assignedGuide ? (
+              <div className="booking-guide-assigned">
+                <div className="booking-guide-card">
+                  <span className="admin-avatar">{guideInitials(assignedGuide.name)}</span>
+                  <div>
+                    <b>{assignedGuide.name}</b>
+                    <small>{assignedGuide.title} · {assignedGuide.id}</small>
+                    <small>{assignedGuide.phone}{assignedGuide.email ? ` · ${assignedGuide.email}` : ""}</small>
+                    <small>Speaks {assignedGuide.languages.join(", ")}</small>
+                  </div>
+                </div>
+                {canCancel ? (confirmingRemove ? (
+                  <div className="booking-guide-remove-confirm">
+                    <p>Remove {assignedGuide.name} as the primary guide for {booking.ref}?</p>
+                    <div>
+                      <button className="booking-danger-button" type="button" onClick={removeGuide}>Confirm Removal</button>
+                      <button className="booking-outline-button" type="button" onClick={() => setConfirmingRemove(false)}>Keep Guide</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="booking-guide-actions">
+                    <button type="button" className="booking-outline-button" onClick={onAssignGuide}>Change Guide</button>
+                    <button type="button" className="booking-outline-button" onClick={() => setConfirmingRemove(true)}>Remove Assignment</button>
+                  </div>
+                )) : (
+                  <p className="booking-guide-locked">Guide assignment is locked for {booking.status.toLowerCase()} bookings.</p>
+                )}
+              </div>
+            ) : booking.assignedGuideId ? (
+              <div className="booking-guide-assigned">
+                <p className="booking-guide-missing"><CircleAlert size={14} /> The assigned guide record ({booking.assignedGuideId}) no longer exists in the demo data.</p>
+                {canCancel && (
+                  <div className="booking-guide-actions">
+                    <button type="button" className="booking-outline-button" onClick={onAssignGuide}>Assign a New Guide</button>
+                    <button type="button" className="booking-outline-button" onClick={removeGuide}>Clear Assignment</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="booking-guide-empty">
+                <span><Users size={17} /></span>
+                <b>No guide assigned</b>
+                <p>This reservation has not been matched with an approved guide.</p>
+                {canCancel
+                  ? <button type="button" className="booking-outline-button" onClick={onAssignGuide}>Assign Guide</button>
+                  : <p className="booking-guide-locked">Guide assignment is locked for {booking.status.toLowerCase()} bookings.</p>}
+              </div>
+            )}
           </section>
 
           <section className="booking-panel">

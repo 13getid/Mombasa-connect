@@ -2,6 +2,7 @@ import './admin.css';
 import { useMemo, useState } from "react";
 import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import BookingDetails from "./BookingDetails";
+import GuideAssignment from "./GuideAssignment";
 import { ThemeToggle } from "../shared/theme/theme";
 import {
   Activity,
@@ -67,14 +68,14 @@ const kpis = [
 ] as const;
 
 const initialBookings: BookingRecord[] = [
-  { ref: "MTD-1024", customer: "Amina Hassan", phone: "+254 712 340 118", experience: "Old Town Heritage Tour", date: "2026-11-14", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed" },
-  { ref: "MTD-1023", customer: "James Mwangi", phone: "+254 722 410 927", experience: "Tudor Creek Dhow Ride", date: "2026-11-14", guests: 3, source: "USSD", amount: 4500, payment: "Pending", status: "Pending" },
-  { ref: "MTD-1022", customer: "Sarah Kimani", phone: "+254 733 852 011", experience: "Fort Jesus Experience", date: "2026-11-15", guests: 2, source: "Website", amount: 2000, payment: "Paid", status: "Confirmed" },
-  { ref: "MTD-1021", customer: "Daniel Otieno", phone: "+254 701 774 209", experience: "Old Town Heritage Tour", date: "2026-11-15", guests: 2, source: "USSD", amount: 3000, payment: "Pending", status: "Pending" },
-  { ref: "MTD-1020", customer: "Grace Wanjiku", phone: "+254 710 932 460", experience: "Tudor Creek Dhow Ride", date: "2026-11-16", guests: 3, source: "Website", amount: 4500, payment: "Paid", status: "Completed" },
-  { ref: "MTD-1019", customer: "Peter Kamau", phone: "+254 745 220 191", experience: "Fort Jesus Experience", date: "2026-11-21", guests: 4, source: "Website", amount: 4000, payment: "Failed", status: "Rejected" },
-  { ref: "MTD-1018", customer: "Fatma Ali", phone: "+254 728 665 104", experience: "Old Town Heritage Tour", date: "2026-11-22", guests: 2, source: "USSD", amount: 3000, payment: "Refunded", status: "Cancelled" },
-  { ref: "MTD-1017", customer: "Brian Otieno", phone: "+254 719 306 841", experience: "Tudor Creek Dhow Ride", date: "2026-11-23", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed" },
+  { ref: "MTD-1024", customer: "Amina Hassan", phone: "+254 712 340 118", experience: "Old Town Heritage Tour", date: "2026-11-14", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed", assignedGuideId: "MTD-G-0117" },
+  { ref: "MTD-1023", customer: "James Mwangi", phone: "+254 722 410 927", experience: "Tudor Creek Dhow Ride", date: "2026-11-14", guests: 3, source: "USSD", amount: 4500, payment: "Pending", status: "Pending", assignedGuideId: null },
+  { ref: "MTD-1022", customer: "Sarah Kimani", phone: "+254 733 852 011", experience: "Fort Jesus Experience", date: "2026-11-15", guests: 2, source: "Website", amount: 2000, payment: "Paid", status: "Confirmed", assignedGuideId: null },
+  { ref: "MTD-1021", customer: "Daniel Otieno", phone: "+254 701 774 209", experience: "Old Town Heritage Tour", date: "2026-11-15", guests: 2, source: "USSD", amount: 3000, payment: "Pending", status: "Pending", assignedGuideId: null },
+  { ref: "MTD-1020", customer: "Grace Wanjiku", phone: "+254 710 932 460", experience: "Tudor Creek Dhow Ride", date: "2026-11-16", guests: 3, source: "Website", amount: 4500, payment: "Paid", status: "Completed", assignedGuideId: "MTD-G-0129" },
+  { ref: "MTD-1019", customer: "Peter Kamau", phone: "+254 745 220 191", experience: "Fort Jesus Experience", date: "2026-11-21", guests: 4, source: "Website", amount: 4000, payment: "Failed", status: "Rejected", assignedGuideId: null },
+  { ref: "MTD-1018", customer: "Fatma Ali", phone: "+254 728 665 104", experience: "Old Town Heritage Tour", date: "2026-11-22", guests: 2, source: "USSD", amount: 3000, payment: "Refunded", status: "Cancelled", assignedGuideId: null },
+  { ref: "MTD-1017", customer: "Brian Otieno", phone: "+254 719 306 841", experience: "Tudor Creek Dhow Ride", date: "2026-11-23", guests: 2, source: "Website", amount: 3000, payment: "Paid", status: "Confirmed", assignedGuideId: null },
 ];
 
 const experiences = [
@@ -84,7 +85,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string; isCreate?: boolean } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -118,12 +119,12 @@ function Sidebar({ activeItem, onNavigate, onLogout, mobileNavOpen }: { activeIt
   );
 }
 
-function Topbar({ page, detail, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { page: string; detail?: string; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
+function Topbar({ trail, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { trail: string[]; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
   const [profileOpen, setProfileOpen] = useState(false);
   return (
     <header className="admin-topbar">
       <button className="admin-mobile-menu" type="button" onClick={onToggleMenu} aria-label="Toggle navigation" aria-expanded={mobileNavOpen}><Menu size={19} /></button>
-      <div className="admin-breadcrumb"><span>Administration</span><i>/</i>{detail ? <><span>{page}</span><i>/</i><b>{detail}</b></> : <b>{page}</b>}</div>
+      <div className="admin-breadcrumb"><span>Administration</span>{trail.map((crumb, index) => <span key={crumb} className="admin-breadcrumb-part"><i>/</i>{index === trail.length - 1 ? <b>{crumb}</b> : <span>{crumb}</span>}</span>)}</div>
       <label className="admin-search">
         <Search size={17} />
         <input aria-label="Search bookings, tours or customers" value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Search bookings, tours or customers..." />
@@ -276,6 +277,7 @@ export default function AdminPortal() {
     return matches.slice(0, 5);
   }, [query, records]);
   const pendingBookings = records.filter((record) => record.status === "Pending").length;
+  const bookingsNeedingGuide = records.filter((record) => (record.status === "Pending" || record.status === "Confirmed") && !record.assignedGuideId).length;
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
   const navigate = (label: string) => {
     setMobileNavOpen(false);
@@ -296,13 +298,20 @@ export default function AdminPortal() {
     setQuery("");
     window.scrollTo({ top: 0 });
   };
+  const assignGuide = (ref: string) => {
+    setMobileNavOpen(false);
+    setSelectedBookingRef(ref);
+    setPage("GuideAssignment");
+    setQuery("");
+    window.scrollTo({ top: 0 });
+  };
   const createTour = () => setModal({ title: "Create a new tour.", description: "The complete Create Tour workflow will be designed in a later step. This overview prototype preserves the intended entry point.", isCreate: true });
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "BookingDetails" ? "Bookings" : page} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
-        <Topbar page={page === "BookingDetails" ? "Bookings" : page} detail={page === "BookingDetails" ? selectedBookingRef ?? "Booking" : undefined} query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
+        <Topbar trail={page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"] : page === "GuideAssignment" ? ["Bookings", selectedBookingRef ?? "Booking", "Assign Guide"] : [page]} query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
         <main className="admin-content">
           {page === "Overview" ? <>
           <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Saturday</b><small>14 November 2026 · Demo</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
@@ -321,16 +330,18 @@ export default function AdminPortal() {
           <aside className="overview-rail">
             <CalendarWidget records={records} onSelectDate={(date) => { navigate("Bookings"); setBookingDate(date); }} />
             <UpcomingTours records={records} onView={() => navigate("Bookings")} />
-            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: 3, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Availability & Scheduling" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
+            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: bookingsNeedingGuide, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Bookings" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
           </aside>
           </section>
           </> : page === "Bookings"
-            ? <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onPrototype={openFuture} onViewBooking={viewBooking} />
-            : <BookingDetails records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onPrototype={openFuture} />}
+            ? <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
+            : page === "BookingDetails"
+            ? <BookingDetails records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            : <GuideAssignment records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef) : navigate("Bookings")} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}
-      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : `Return to ${page === "BookingDetails" ? "booking details" : page.toLowerCase()}`}</button></section></div>}
+      {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol">{modal.isCreate ? <Compass size={25} /> : <ArrowRight size={23} />}</span><p className="admin-eyebrow">{modal.isCreate ? "Tour management" : "Future admin module"}</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p>{modal.isCreate && <div className="modal-form-preview"><label>Tour name<input placeholder="Enter experience name" /></label><label>Location<input placeholder="Mombasa location" /></label></div>}<button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{modal.isCreate ? "Close preview" : `Return to ${page === "BookingDetails" ? "booking details" : page === "GuideAssignment" ? "guide assignment" : page.toLowerCase()}`}</button></section></div>}
     </div>
   );
 }

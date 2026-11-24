@@ -28,11 +28,21 @@
 .booking-danger-button:hover { background: var(--danger-soft); }
 .booking-outline-button { min-height: 38px; padding: 0 14px; border: 1px solid var(--line-strong); color: var(--ocean-deep); background: transparent; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
 .booking-outline-button:hover { background: var(--sand); }
-.booking-guide-empty { padding: 2px 20px 20px; display: grid; justify-items: start; gap: 8px; }
-.booking-guide-empty > span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: var(--sand); }
+.booking-guide-empty { padding: 2px 20px 20px; display: grid; justify-items: start; gap: 8px; }.booking-guide-empty > span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); background: var(--sand); }
 .booking-guide-empty b { color: var(--ocean-deep); font-size: 12px; }
 .booking-guide-empty p { color: var(--muted); font-size: 11px; line-height: 1.5; }
 .booking-guide-empty .booking-outline-button { margin-top: 4px; }
+.booking-guide-assigned { padding: 2px 20px 20px; display: grid; justify-items: start; gap: 14px; }
+.booking-guide-card { display: flex; align-items: flex-start; gap: 11px; }
+.booking-guide-card b { display: block; color: var(--ocean-deep); font-size: 13px; font-weight: 600; }
+.booking-guide-card small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.booking-guide-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.booking-guide-locked { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.booking-guide-missing { display: flex; align-items: flex-start; gap: 7px; color: var(--warning-strong); font-size: 11px; line-height: 1.5; }
+.booking-guide-missing svg { margin-top: 2px; flex: none; }
+.booking-guide-remove-confirm { display: grid; gap: 10px; }
+.booking-guide-remove-confirm > p { color: var(--ocean-deep); font-size: 12px; }
+.booking-guide-remove-confirm > div { display: flex; gap: 8px; flex-wrap: wrap; }
 .booking-source-body { padding: 2px 20px 20px; display: flex; gap: 12px; }
 .booking-source-body > span { width: 34px; height: 34px; display: grid; place-items: center; flex: none; color: var(--teal-dark); background: var(--success-soft); }
 .booking-source-body b { color: var(--ocean-deep); font-size: 12px; }
