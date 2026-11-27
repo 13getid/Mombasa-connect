@@ -12,6 +12,7 @@ import CustomerDetails from "./CustomerDetails";
 import AvailabilityManagement from "./AvailabilityManagement";
 import PaymentsManagement from "./PaymentsManagement";
 import USSDActivity from "./USSDActivity";
+import ReportsAnalytics from "./ReportsAnalytics";
 import { deriveCustomers } from "./customers";
 import { initialTours, type TourRecord } from "./tours";
 import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
@@ -97,7 +98,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" | "Reports & Analytics";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -304,7 +305,7 @@ export default function AdminPortal() {
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
   const navigate = (label: string) => {
     setMobileNavOpen(false);
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity") {
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity" || label === "Reports & Analytics") {
       setPage(label === "Tours & Experiences" ? "Tours" : label === "Availability & Scheduling" ? "Availability" : label);
       if (label === "Availability & Scheduling") setScheduleVisited(true);
       if (label === "Payments") setPaymentsVisited(true);
@@ -402,7 +403,7 @@ export default function AdminPortal() {
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : page === "Reports & Analytics" ? "Reports & Analytics" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
@@ -454,6 +455,8 @@ export default function AdminPortal() {
             ? <GuideDetails guide={guides.find((guide) => guide.id === selectedGuideId)} guideId={selectedGuideId ?? ""} records={records} tours={tours} onStatusChange={changeGuideStatus} onBack={guideOrigin === "Availability" ? backToSchedule : () => navigate("Guides")} backLabel={guideOrigin === "Availability" ? "Availability & Scheduling" : "Guides"} onViewBooking={viewBooking} />
             : page === "Customers"
             ? <CustomersManagement customers={customers} onViewCustomer={viewCustomer} />
+            : page === "Reports & Analytics"
+            ? <ReportsAnalytics records={records} tours={tours} guides={guides} />
             : page === "Availability" || page === "Payments" || page === "USSD Activity" ? null
             : <CustomerDetails customer={customers.find((customer) => customer.key === selectedCustomerKey)} onBack={() => navigate("Customers")} onViewBooking={(ref) => viewBooking(ref, "CustomerDetails")} />}
         </main>
