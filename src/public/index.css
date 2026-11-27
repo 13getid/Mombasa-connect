@@ -1438,7 +1438,7 @@ footer {
   background: #f8fcff;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
 }
-.modal-close {
+.booking-modal .modal-close {
   position: absolute;
   z-index: 2;
   right: 16px;

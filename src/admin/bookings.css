@@ -35,6 +35,7 @@
 .booking-actions > div { padding: 6px 0; display: grid; gap: 4px; }
 .booking-actions button { padding: 3px 0; border: 0; color: var(--ocean); background: transparent; font-size: 10px; text-align: left; }
 .booking-actions button:hover { color: var(--teal); }
+.booking-action-error { padding: 10px 12px; border: 1px solid var(--line-strong); color: var(--danger-strong); background: var(--danger-soft); font-size: 12px; line-height: 1.5; }
 
 @media (max-width: 1200px) {
   .booking-filter-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); }

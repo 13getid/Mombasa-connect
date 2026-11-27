@@ -160,7 +160,7 @@ export default function TourEditor({
 
         <aside className="booking-details-rail">
           <section className="booking-panel">
-            <div className="panel-heading"><div><h2>Save Tour</h2><p>Demo changes do not update the public or customer catalogues.</p></div></div>
+            <div className="panel-heading"><div><h2>Save Tour</h2><p>Featured published tours update the in-session public preview; the customer catalogue remains separate.</p></div></div>
             <div className="booking-actions-list">
               <button className="admin-primary-button" type="button" onClick={() => save("Published")}><Check size={16} /> Save &amp; Publish</button>
               <button className="booking-outline-button" type="button" onClick={() => save(existing && existing.status !== "Draft" ? "Unpublished" : "Draft")}><Save size={14} /> {existing && existing.status !== "Draft" ? "Save as Unpublished" : "Save as Draft"}</button>

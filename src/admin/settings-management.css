@@ -1,0 +1,20 @@
+.settings-status { color: var(--muted); font-size: 12px; }
+.settings-body { padding: 2px 20px 22px; display: grid; gap: 16px; color: var(--text-soft); font-size: 12px; line-height: 1.6; }
+.settings-body > .booking-outline-button { justify-self: start; }
+.settings-facts { margin: 0; display: grid; gap: 0; }
+.settings-facts > div { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(140px, 1fr) 2fr; gap: 12px; }
+.settings-facts dt { color: var(--muted); font-weight: 600; }
+.settings-facts dd { margin: 0; color: var(--ocean-deep); overflow-wrap: anywhere; }
+.settings-preference { padding: 14px; border: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; background: var(--mc-surface); cursor: pointer; }
+.settings-preference b, .settings-preference small { display: block; }
+.settings-preference b { color: var(--ocean-deep); font-size: 13px; }
+.settings-preference small { margin-top: 5px; color: var(--muted); font-size: 11px; }
+.settings-preference input, .settings-theme input { width: 18px; height: 18px; flex: none; accent-color: var(--teal); }
+.settings-theme { margin: 0; padding: 0; border: 0; display: flex; gap: 18px; flex-wrap: wrap; }
+.settings-theme legend { margin-bottom: 10px; color: var(--ocean-deep); font-weight: 600; }
+.settings-theme label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.settings-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.settings-actions button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 420px) {
+  .settings-facts > div { grid-template-columns: 1fr; gap: 2px; }
+}

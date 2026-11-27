@@ -1,5 +1,5 @@
 import './admin.css';
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import BookingDetails from "./BookingDetails";
 import GuideAssignment from "./GuideAssignment";
@@ -13,6 +13,10 @@ import AvailabilityManagement from "./AvailabilityManagement";
 import PaymentsManagement from "./PaymentsManagement";
 import USSDActivity from "./USSDActivity";
 import ReportsAnalytics from "./ReportsAnalytics";
+import WebsiteContent from "./WebsiteContent";
+import SettingsManagement from "./SettingsManagement";
+import { initialAdminSettings, visibleDemoNotifications, type DemoNotification } from "./settings";
+import { initialWebsiteContent } from "../shared/website/content";
 import { deriveCustomers } from "./customers";
 import { initialTours, type TourRecord } from "./tours";
 import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
@@ -98,7 +102,9 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" | "Reports & Analytics";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" | "Reports & Analytics" | "Website Content" | "Settings";
+
+const PublicWebsite = lazy(() => import("../public/App"));
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -132,7 +138,7 @@ function Sidebar({ activeItem, onNavigate, onLogout, mobileNavOpen }: { activeIt
   );
 }
 
-function Topbar({ trail, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen }: { trail: string[]; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean }) {
+function Topbar({ trail, query, onQuery, onNotifications, onToggleMenu, mobileNavOpen, notificationCount }: { trail: string[]; query: string; onQuery: (value: string) => void; onNotifications: () => void; onToggleMenu: () => void; mobileNavOpen: boolean; notificationCount: number }) {
   const [profileOpen, setProfileOpen] = useState(false);
   return (
     <header className="admin-topbar">
@@ -144,7 +150,7 @@ function Topbar({ trail, query, onQuery, onNotifications, onToggleMenu, mobileNa
         {query && <button type="button" onClick={() => onQuery("")} aria-label="Clear search"><X size={15} /></button>}
       </label>
       <ThemeToggle />
-      <button className="admin-notification" type="button" onClick={onNotifications} aria-label="Open notifications"><Bell size={18} /><span>3</span></button>
+      <button className="admin-notification" type="button" onClick={onNotifications} aria-label={`Open notifications (${notificationCount} sample items)`}><Bell size={18} />{notificationCount > 0 && <span>{notificationCount}</span>}</button>
       <div className="admin-profile-control">
         <button type="button" onClick={() => setProfileOpen((value) => !value)} aria-expanded={profileOpen}>
           <span className="admin-avatar">PA</span>
@@ -265,13 +271,8 @@ function UpcomingTours({ records, tours, onView }: { records: BookingRecord[]; t
   );
 }
 
-function NotificationPanel({ onClose }: { onClose: () => void }) {
-  const items = [
-    ["Booking requires review", "MTD-1023 was submitted through USSD.", "8 minutes ago"],
-    ["Guide verification submitted", "Fatuma Noor uploaded new credentials.", "32 minutes ago"],
-    ["Tour capacity reached", "Saturday’s Tudor Creek departure is full.", "1 hour ago"],
-  ];
-  return <><div className="panel-scrim" onClick={onClose} /><aside className="notification-panel"><div className="notification-panel-header"><div><p>Notifications</p><span>3 unread updates</span></div><button type="button" onClick={onClose} aria-label="Close notifications"><X size={18} /></button></div><div className="notification-panel-list">{items.map(([title, copy, time]) => <article key={title}><span><Bell size={15} /></span><div><b>{title}</b><p>{copy}</p><small>{time}</small></div></article>)}</div><button className="notification-footer" type="button" onClick={onClose}>Mark all as read</button></aside></>;
+function NotificationPanel({ onClose, items }: { onClose: () => void; items: DemoNotification[] }) {
+  return <><div className="panel-scrim" onClick={onClose} /><aside className="notification-panel"><div className="notification-panel-header"><div><p>Notifications</p><span>{items.length} sample {items.length === 1 ? "item" : "items"}</span></div><button type="button" onClick={onClose} aria-label="Close notifications"><X size={18} /></button></div><div className="notification-panel-list">{items.length ? items.map(({ title, detail, time }) => <article key={title}><span><Bell size={15} /></span><div><b>{title}</b><p>{detail}</p><small>{time} · sample</small></div></article>) : <p className="notification-empty">No sample notifications are visible. Check notification preferences in Settings.</p>}</div><button className="notification-footer" type="button" onClick={onClose}>Close panel</button></aside></>;
 }
 
 export default function AdminPortal() {
@@ -279,6 +280,11 @@ export default function AdminPortal() {
   const [page, setPage] = useState<AdminPage>("Overview");
   const [records, setRecords] = useState(initialBookings);
   const [tours, setTours] = useState(initialTours);
+  const [websiteContent, setWebsiteContent] = useState(initialWebsiteContent);
+  const [websiteDirty, setWebsiteDirty] = useState(false);
+  const [settings, setSettings] = useState(() => ({ ...initialAdminSettings }));
+  const [settingsDirty, setSettingsDirty] = useState(false);
+  const [publicPreview, setPublicPreview] = useState(false);
   const [guides, setGuides] = useState(demoGuides);
   const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
@@ -294,6 +300,33 @@ export default function AdminPortal() {
   const [modal, setModal] = useState<ModalState>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.replace(/\/+$/, "");
+      if (path === "" || path === "/home") {
+        if (websiteDirty && !window.confirm("Discard unsaved website content changes?")) {
+          window.history.pushState(null, "", "/admin");
+          return;
+        }
+        if (settingsDirty && !window.confirm("Discard unsaved demo settings?")) {
+          window.history.pushState(null, "", "/admin");
+          return;
+        }
+        setWebsiteDirty(false);
+        setSettingsDirty(false);
+        setPublicPreview(true);
+      }
+      else if (path === "/admin") setPublicPreview(false);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [websiteDirty, settingsDirty]);
+  useEffect(() => {
+    if (!websiteDirty && !settingsDirty) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [websiteDirty, settingsDirty]);
   const filteredBookings = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     const matches = normalized ? records.filter((booking) => Object.values(booking).join(" ").toLowerCase().includes(normalized)) : records;
@@ -303,9 +336,21 @@ export default function AdminPortal() {
   const customers = useMemo(() => deriveCustomers(records), [records]);
   const bookingsNeedingGuide = records.filter((record) => (record.status === "Pending" || record.status === "Confirmed") && !record.assignedGuideId).length;
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
+  const canLeaveEditor = () => {
+    if (page === "Website Content" && websiteDirty) {
+      if (!window.confirm("Discard unsaved website content changes?")) return false;
+      setWebsiteDirty(false);
+    }
+    if (page === "Settings" && settingsDirty) {
+      if (!window.confirm("Discard unsaved demo settings?")) return false;
+      setSettingsDirty(false);
+    }
+    return true;
+  };
   const navigate = (label: string) => {
-    setMobileNavOpen(false);
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity" || label === "Reports & Analytics") {
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity" || label === "Reports & Analytics" || label === "Website Content" || label === "Settings") {
+      if (label !== page && !canLeaveEditor()) return;
+      setMobileNavOpen(false);
       setPage(label === "Tours & Experiences" ? "Tours" : label === "Availability & Scheduling" ? "Availability" : label);
       if (label === "Availability & Scheduling") setScheduleVisited(true);
       if (label === "Payments") setPaymentsVisited(true);
@@ -324,6 +369,7 @@ export default function AdminPortal() {
     }
   };
   const viewBooking = (ref: string, origin: "Bookings" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" = "Bookings") => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedBookingRef(ref);
     setBookingOrigin(origin);
@@ -332,6 +378,7 @@ export default function AdminPortal() {
     window.scrollTo({ top: 0 });
   };
   const assignGuide = (ref: string) => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedBookingRef(ref);
     setPage("GuideAssignment");
@@ -339,18 +386,21 @@ export default function AdminPortal() {
     window.scrollTo({ top: 0 });
   };
   const createTour = () => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedTourId(null);
     setPage("TourEditor");
     window.scrollTo({ top: 0 });
   };
   const editTour = (id: string) => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedTourId(id);
     setPage("TourEditor");
     window.scrollTo({ top: 0 });
   };
   const viewGuide = (id: string, origin: "Guides" | "Availability" = "Guides") => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedGuideId(id);
     setGuideOrigin(origin);
@@ -359,6 +409,7 @@ export default function AdminPortal() {
     window.scrollTo({ top: 0 });
   };
   const viewCustomer = (key: string) => {
+    if (!canLeaveEditor()) return;
     setMobileNavOpen(false);
     setSelectedCustomerKey(key);
     setPage("CustomerDetails");
@@ -401,9 +452,20 @@ export default function AdminPortal() {
     setSelectedTourId(tour.id);
   };
 
+  if (publicPreview) {
+    return <>
+      <Suspense fallback={<p>Loading public preview…</p>}><PublicWebsite content={websiteContent} tours={tours} /></Suspense>
+      <div className="website-preview-banner"><span>Public website preview · demo changes only</span><button type="button" onClick={() => {
+        window.history.pushState(null, "", "/admin");
+        setPublicPreview(false);
+        window.scrollTo({ top: 0 });
+      }}>Return to {page === "Website Content" ? "Website Content" : "Admin"}</button></div>
+    </>;
+  }
+
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : page === "Reports & Analytics" ? "Reports & Analytics" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : page === "Reports & Analytics" ? "Reports & Analytics" : page === "Website Content" ? "Website Content" : page === "Settings" ? "Settings" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
@@ -414,7 +476,7 @@ export default function AdminPortal() {
           : page === "CustomerDetails" ? ["Customers", "Customer Details"]
           : page === "Availability" ? ["Availability & Scheduling"]
           : [page]
-        } query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
+        } query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} notificationCount={visibleDemoNotifications(settings).length} />
         <main className="admin-content">
           {scheduleVisited && <div hidden={page !== "Availability"}><AvailabilityManagement records={records} guides={guides} onViewBooking={(ref) => viewBooking(ref, "Availability")} onViewGuide={(id) => viewGuide(id, "Availability")} onAssignGuide={(ref) => { setBookingOrigin("Availability"); assignGuide(ref); }} /></div>}
           {paymentsVisited && <div hidden={page !== "Payments"}><PaymentsManagement records={records} onViewBooking={(ref) => viewBooking(ref, "Payments")} /></div>}
@@ -440,9 +502,9 @@ export default function AdminPortal() {
           </aside>
           </section>
           </> : page === "Bookings"
-            ? <BookingsManagement records={records} guides={guides} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
+            ? <BookingsManagement records={records} guides={guides} settings={settings} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
             : page === "BookingDetails"
-            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : bookingOrigin === "USSD Activity" ? backToUssd : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : bookingOrigin === "USSD Activity" ? "USSD Activity" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            ? <BookingDetails records={records} guides={guides} settings={settings} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : bookingOrigin === "USSD Activity" ? backToUssd : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : bookingOrigin === "USSD Activity" ? "USSD Activity" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
             ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef, bookingOrigin) : navigate("Bookings")} />
             : page === "Tours"
@@ -457,11 +519,19 @@ export default function AdminPortal() {
             ? <CustomersManagement customers={customers} onViewCustomer={viewCustomer} />
             : page === "Reports & Analytics"
             ? <ReportsAnalytics records={records} tours={tours} guides={guides} />
+            : page === "Settings"
+            ? <SettingsManagement settings={settings} onSave={setSettings} onDirtyChange={setSettingsDirty} onWebsiteContent={() => navigate("Website Content")} />
+            : page === "Website Content"
+            ? <WebsiteContent content={websiteContent} tours={tours} onSave={setWebsiteContent} onDirtyChange={setWebsiteDirty} onPreview={() => {
+              window.history.pushState(null, "", "/");
+              setPublicPreview(true);
+              window.scrollTo({ top: 0 });
+            }} />
             : page === "Availability" || page === "Payments" || page === "USSD Activity" ? null
             : <CustomerDetails customer={customers.find((customer) => customer.key === selectedCustomerKey)} onBack={() => navigate("Customers")} onViewBooking={(ref) => viewBooking(ref, "CustomerDetails")} />}
         </main>
       </div>
-      {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}
+      {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} items={visibleDemoNotifications(settings)} />}
       {modal && <div className="modal-scrim" onMouseDown={() => setModal(null)}><section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title" onMouseDown={(event) => event.stopPropagation()}><button className="modal-close" type="button" onClick={() => setModal(null)} aria-label="Close"><X size={18} /></button><span className="modal-symbol"><ArrowRight size={23} /></span><p className="admin-eyebrow">Future admin module</p><h2 id="admin-modal-title">{modal.title}</h2><p>{modal.description}</p><button className="admin-primary-button" type="button" onClick={() => setModal(null)}>{`Return to ${page === "BookingDetails" ? "booking details" : page === "GuideAssignment" ? "guide assignment" : page === "Tours" ? "tours & experiences" : page === "TourEditor" ? "the tour editor" : page.toLowerCase()}`}</button></section></div>}
     </div>
   );

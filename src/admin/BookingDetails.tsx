@@ -18,6 +18,7 @@ import {
 import { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import { findGuide, guideInitials, type GuideRecord } from "./guides";
 import GuideStatusBadge from "./GuideStatusBadge";
+import { bookingConfirmationError, type AdminSettings } from "./settings";
 import "./booking-details.css";
 
 const missingValue = <span className="booking-field-missing">Not recorded in demo data</span>;
@@ -39,6 +40,7 @@ export default function BookingDetails({
   onBack,
   onAssignGuide,
   backLabel = "Bookings",
+  settings,
 }: {
   records: BookingRecord[];
   guides: GuideRecord[];
@@ -47,8 +49,10 @@ export default function BookingDetails({
   onBack: () => void;
   onAssignGuide: () => void;
   backLabel?: string;
+  settings: AdminSettings;
 }) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const booking = records.find((record) => record.ref === bookingRef);
 
   if (!booking) {
@@ -66,6 +70,9 @@ export default function BookingDetails({
   }
 
   const updateStatus = (nextStatus: BookingRecord["status"]) => {
+    const error = nextStatus === "Confirmed" ? bookingConfirmationError(booking, guides, settings) : null;
+    setActionError(error);
+    if (error) return;
     onRecordsChange(records.map((record) => record.ref === booking.ref ? { ...record, status: nextStatus } : record));
   };
   const canConfirm = booking.status === "Pending";
@@ -155,6 +162,7 @@ export default function BookingDetails({
           <section className="booking-panel">
             <div className="panel-heading"><div><h2>Booking Actions</h2><p>Demo status changes only; nothing is permanently saved.</p></div></div>
             <div className="booking-actions-list">
+              {actionError && <p className="booking-action-error" role="alert">{actionError}</p>}
               {canConfirm && <button className="admin-primary-button" type="button" onClick={() => updateStatus("Confirmed")}><Check size={16} /> Confirm Booking</button>}
               {canCancel && <button className="booking-danger-button" type="button" onClick={() => updateStatus("Cancelled")}><X size={16} /> Cancel Booking</button>}
               {!canConfirm && !canCancel && <p className="booking-actions-empty">No status actions are available for a {booking.status.toLowerCase()} booking.</p>}

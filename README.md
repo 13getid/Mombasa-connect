@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, Guides, Customers, Availability & Scheduling, Payments, USSD Activity, and Reports & Analytics screens with shared light/dark theme and temporary demonstration data. |
+| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, Guides, Customers, Availability & Scheduling, Payments, USSD Activity, Reports & Analytics, Website Content and Settings screens with shared light/dark theme and temporary demonstration data. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
@@ -81,8 +81,10 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Payments Management is a read-only view of shared demo bookings with search, payment status filters, booking details navigation and filtered CSV export. Totals group full booking amounts by recorded payment status; they are not verified receipts, retained revenue or actual refunds. No transaction IDs, methods, timestamps, received amounts or refund records are stored. Payment verification and refund processing require a future backend and payment provider.
 - USSD Activity derives booking counts, recorded booking value and payment-status counts from shared bookings whose source is `USSD`. Search and booking/payment filters apply to the list and CSV export, and details link to the existing booking workflow. The totals cover all USSD demo bookings, including cancelled and rejected records, not verified revenue or live gateway traffic. Gateway sessions and request logs are not connected; genuine monitoring requires future backend and USSD gateway integration.
 - Reports & Analytics derives booking, status, source, tour, guide and customer-group reports from shared Admin demo data. Experience-date, booking-status, payment-status and source filters apply to booking-derived figures and CSV export. Recorded booking value sums stored booking amounts across all statuses, not revenue or settlements. Guide status totals cover the current unfiltered guide directory; tour catalogue status and category are current, and name-based unmatched bookings are shown separately. Customer groups use the existing contact-matching heuristic, not verified identities or retention. The experience date is not a booking creation date.
+- Website Content edits the existing homepage hero text, image and action labels, the About heading and description, and up to three ordered featured experiences. Save updates the shared in-memory content; the public website preview uses that content and the current Admin tour catalogue. Only published selected tours appear; unpublished selections are hidden without deleting their history. Images are selected from existing local assets; uploads are not available. Contact, footer and other public sections remain unchanged.
+- Settings provides read-only general and system information, a link to Website Content, shared theme selection, and session-only booking and sample-notification preferences. An optional guide requirement blocks confirmation of a demo booking without an existing guide record in both booking screens; existing assignments, including to guides no longer approved, remain valid. Notification options only filter the existing Admin sample panel and badge. They do not control delivery. Changing the booking rule requires confirmation and never changes existing records. No backend enforcement or live booking, notification, USSD or payment service is provided.
 - Other unfinished modules remain explicitly marked future-feature placeholders.
-- Booking, guide-assignment, and tour changes survive navigation between admin screens but reset on reload. The admin tour catalogue does not update the separate public or customer catalogues. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
+- Booking, guide-assignment, tour, website-content and Settings changes survive navigation between admin screens but reset on reload. Unsaved Settings drafts can be cancelled and trigger a warning on navigation; theme selection applies immediately and uses the existing persistent shared preference, independently of Settings save or cancel. The public website preview is an in-app transition to the actual public page, using the same session state; a normal reload, separate tab or visitor sees the initial content. The customer catalogue remains separate. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
 - No backend integration, authentication, or access control.
 
 ### Shared Appearance
@@ -190,7 +192,7 @@ npm run preview -- --port 4173
 
 Vite's build does not replace the separate TypeScript check. There is currently no automated unit or end-to-end test suite configured in the project scripts.
 
-Run the focused Payments, USSD and Reports tests with `node --test tests/payments.test.mjs tests/ussd.test.mjs tests/reports.test.mjs`.
+Run the focused Payments, USSD, Reports, Website Content and Settings tests with `node --test tests/payments.test.mjs tests/ussd.test.mjs tests/reports.test.mjs tests/website-content.test.mjs tests/settings.test.mjs`.
 
 To format the project:
 
@@ -243,6 +245,8 @@ src/
     ussd-activity.css  USSD activity styles
     csv.ts             Shared Admin CSV escaping
     ReportsAnalytics.tsx Filtered Admin reporting dashboard
+    WebsiteContent.tsx Homepage content editor and preview controls
+    website-content.css Website content editor styles
     reports.ts         Report calculations and CSV export
     reports-analytics.css Report dashboard styles
     ToursManagement.tsx Demo tour catalogue, filters, and publication actions

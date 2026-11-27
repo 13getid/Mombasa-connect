@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Clock3, Download, Search, TicketCheck, X } from "lucide-react";
 import { findGuide, type GuideRecord } from "./guides";
 import GuideStatusBadge from "./GuideStatusBadge";
+import { bookingConfirmationError, type AdminSettings } from "./settings";
 import "./bookings.css";
 
 export type BookingRecord = {
@@ -33,6 +34,7 @@ export default function BookingsManagement({
   initialDate,
   onViewBooking,
   onAssignGuide,
+  settings,
 }: {
   records: BookingRecord[];
   guides: GuideRecord[];
@@ -42,12 +44,14 @@ export default function BookingsManagement({
   initialDate: string;
   onViewBooking: (ref: string) => void;
   onAssignGuide: (ref: string) => void;
+  settings: AdminSettings;
 }) {
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Bookings");
   const [tour, setTour] = useState("All Tours");
   const [source, setSource] = useState("All Sources");
   const [payment, setPayment] = useState("All Payments");
   const [date, setDate] = useState(initialDate);
+  const [actionError, setActionError] = useState<{ ref: string; message: string } | null>(null);
 
   const filtered = records.filter((record) => {
     const searchText = Object.values(record).join(" ").toLowerCase();
@@ -68,6 +72,14 @@ export default function BookingsManagement({
     onQuery("");
   };
   const updateStatus = (ref: string, nextStatus: BookingRecord["status"]) => {
+    const record = records.find((item) => item.ref === ref);
+    if (!record) {
+      setActionError({ ref, message: `Booking ${ref} is no longer available.` });
+      return;
+    }
+    const error = nextStatus === "Confirmed" ? bookingConfirmationError(record, guides, settings) : null;
+    setActionError(error ? { ref, message: error } : null);
+    if (error) return;
     onRecordsChange(records.map((record) => record.ref === ref ? { ...record, status: nextStatus } : record));
   };
   const exportRows = () => {
@@ -96,6 +108,7 @@ export default function BookingsManagement({
         <button className="admin-primary-button" type="button" onClick={exportRows}><Download size={16} /> Export</button>
       </section>
 
+      {actionError && !records.some((record) => record.ref === actionError.ref) && <div className="booking-action-error" role="alert">{actionError.message}</div>}
       <section className="booking-stats-grid" aria-label="Demo booking summary">
         {([
           ["Total bookings", "All Bookings", TicketCheck],
@@ -154,6 +167,7 @@ export default function BookingsManagement({
                 <td>{guide ? <>{guide.name}{guide.status !== "Approved" && <div><GuideStatusBadge status={guide.status} /></div>}</> : record.assignedGuideId ? "Unknown guide" : <span className="booking-guide-unassigned">Unassigned</span>}</td>
                 <td><details className="booking-actions"><summary aria-label={`Actions for ${record.ref}`}>Actions</summary>
                   <div>
+                    {actionError?.ref === record.ref && <p className="booking-action-error" role="alert">{actionError.message}</p>}
                     <button type="button" onClick={() => onViewBooking(record.ref)}>View Booking</button>
                     {record.status === "Pending" && <button type="button" onClick={() => updateStatus(record.ref, "Confirmed")}>Confirm Booking</button>}
                     {(record.status === "Pending" || record.status === "Confirmed") && <>

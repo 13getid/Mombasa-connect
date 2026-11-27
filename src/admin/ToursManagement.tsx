@@ -56,7 +56,7 @@ export default function ToursManagement({
           <p className="admin-eyebrow">Tour catalogue</p>
           <h1>Tours &amp; Experiences</h1>
           <p>Create, edit and publish the experiences offered on Mombasa Connect.</p>
-          <p className="bookings-demo-note">Demo catalogue only. Changes reset on reload and do not update the public or customer catalogues.</p>
+          <p className="bookings-demo-note">Demo catalogue only. Changes reset on reload; featured published tours appear in the in-session public preview. The customer catalogue remains separate.</p>
         </div>
         <button className="admin-primary-button" type="button" onClick={onCreateTour}><Plus size={16} /> New Tour</button>
       </section>

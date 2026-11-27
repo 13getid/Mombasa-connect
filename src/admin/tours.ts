@@ -76,7 +76,7 @@ export const initialTours: TourRecord[] = [
     location: "Tudor Creek, Mombasa",
     duration: "1–2 hours",
     price: 2500,
-    image: "/images/tudor-creek-dhow.jpg",
+    image: "/images/dhow-sail.jpg",
     status: "Published",
   },
   {

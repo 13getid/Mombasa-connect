@@ -2,60 +2,27 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Check, Compass } from "lucide-react";
 import { ThemeToggle } from "../shared/theme/theme";
 import { AccountAccess, type AccessMode } from "../shared/auth/AccountAccess";
+import { initialTours, tourImages, type TourRecord } from "../admin/tours";
+import { featuredTours, initialWebsiteContent, type WebsiteContent } from "../shared/website/content";
 import "./index.css";
 
 type Experience = {
-  id: number;
+  id: string;
   name: string;
   price: string;
-  numericPrice: number;
   duration: string;
   type: string;
   description: string;
   image: string;
-  code: string;
+  code?: string;
   featured?: boolean;
 };
 
-const experiences: Experience[] = [
-  {
-    id: 1,
-    name: "Old Town Heritage Tour",
-    price: "KES 1,500",
-    numericPrice: 1500,
-    duration: "2–3 hours",
-    type: "Walking trail",
-    description:
-      "Walk through the historic streets of Old Town, discover Swahili architecture and uncover the stories that make this coastal city unique.",
-    image: "/images/old-town-street.jpg",
-    code: "*384*1#",
-    featured: true,
-  },
-  {
-    id: 2,
-    name: "Tudor Creek Dhow Ride",
-    price: "KES 2,500",
-    numericPrice: 2500,
-    duration: "1–2 hours",
-    type: "Maritime sunset sail",
-    description:
-      "Step aboard a traditional wooden dhow and experience the peaceful beauty of Tudor Creek.",
-    image: "/images/dhow-sail.jpg",
-    code: "*384*2#",
-  },
-  {
-    id: 3,
-    name: "Fort Jesus Experience",
-    price: "KES 1,200",
-    numericPrice: 1200,
-    duration: "1–2 hours",
-    type: "Unesco coastal landmark",
-    description:
-      "Explore the architecture, history and stories of one of Kenya's most remarkable coastal landmarks.",
-    image: "/images/fort-jesus.jpg",
-    code: "*384*3#",
-  },
-];
+const originalPresentation: Record<string, { name: string; type: string; code: string }> = {
+  "MTD-T-001": { name: "Old Town Heritage Tour", type: "Walking trail", code: "*384*1#" },
+  "MTD-T-002": { name: "Tudor Creek Dhow Ride", type: "Maritime sunset sail", code: "*384*2#" },
+  "MTD-T-003": { name: "Fort Jesus Experience", type: "Unesco coastal landmark", code: "*384*3#" },
+};
 
 const values = [
   {
@@ -198,8 +165,8 @@ function ExperienceCard({
     <article className={experience.featured ? "experience featured" : "experience"}>
       <div className="experience-image">
         <img src={experience.image} alt="" />
-        {experience.featured && <span className="image-label">Featured heritage trail</span>}
-        <span className="ussd-tag">USSD: {experience.code}</span>
+        {experience.featured && <span className="image-label">{experience.id === "MTD-T-001" && experience.name === "Old Town Heritage Tour" ? "Featured heritage trail" : "Featured experience"}</span>}
+        {experience.code && <span className="ussd-tag">USSD: {experience.code}</span>}
       </div>
       <div className="experience-title-row">
         <h3>{experience.name}</h3>
@@ -363,7 +330,7 @@ function BookingModal({
           <div className="modal-image">
             <img src={selected.image} alt="" />
           </div>
-          <p className="eyebrow">Curated experience · {selected.code}</p>
+          <p className="eyebrow">Curated experience{selected.code ? ` · ${selected.code}` : ""}</p>
           <h2 id="booking-title">{selected.name}</h2>
           <p>{selected.description}</p>
           <div className="modal-facts">
@@ -389,10 +356,23 @@ function BookingModal({
   );
 }
 
-export default function App() {
+export default function App({ content = initialWebsiteContent, tours = initialTours }: {
+  content?: WebsiteContent;
+  tours?: TourRecord[];
+}) {
   const [booking, setBooking] = useState<Experience | null>(null);
   const [accessMode, setAccessMode] = useState<AccessMode | null>(null);
   const startBooking = () => setAccessMode("signup");
+  const experiences: Experience[] = featuredTours(content, tours).map((tour, index) => {
+    const original = originalPresentation[tour.id];
+    const presentation = original?.name === tour.name ? original : undefined;
+    return {
+      id: tour.id, name: tour.name, price: `KES ${tour.price.toLocaleString("en-KE")}`,
+      duration: tour.duration, type: presentation?.type ?? tour.category,
+      description: tour.fullDescription, image: tour.image, code: presentation?.code,
+      featured: index === 0,
+    };
+  });
 
   const copyCode = async () => {
     try {
@@ -410,18 +390,17 @@ export default function App() {
           <div className="hero-copy">
             <p className="eyebrow">Coastal Swahili journeys · Volume I</p>
             <h1>
-              Experience Mombasa <em>Like a Local.</em>
+              {content.headline} <em>{content.headlineEmphasis}</em>
             </h1>
             <p className="lead">
-              Discover the stories, culture and hidden gems of Mombasa through authentic experiences
-              led by local guides.
+              {content.description}
             </p>
             <div className="hero-actions">
               <a className="button button-primary" href="#experiences">
-                Explore experiences <Arrow light />
+                {content.primaryAction} <Arrow light />
               </a>
               <a className="button button-secondary" href="#offline">
-                Book without internet <code>*384*123#</code>
+                {content.secondaryAction} <code>*384*123#</code>
               </a>
             </div>
             <div className="hero-meta">
@@ -434,16 +413,16 @@ export default function App() {
           </div>
           <figure className="hero-image">
             <img
-              src="/images/tudor-creek-dhow.jpg"
-              alt="A traditional dhow sailing on the Kenyan coast"
+              src={content.heroImage}
+              alt={content.heroImage === "/images/tudor-creek-dhow.jpg" ? "A traditional dhow sailing on the Kenyan coast" : tourImages.find((image) => image.value === content.heroImage)?.label ?? ""}
             />
-            <figcaption>
+            {content.heroImage === "/images/tudor-creek-dhow.jpg" && <figcaption>
               <span>
                 <em>Tudor Creek, Mombasa · Lat 4.0435° S</em>
                 <small>Captain Ali · Sunset dhow crossing</small>
               </span>
               <small>Maritime folio 01</small>
-            </figcaption>
+            </figcaption>}
           </figure>
         </section>
 
@@ -471,13 +450,12 @@ export default function App() {
             </div>
             <small>Illustrative demo rates · 2025 Series</small>
           </header>
-          <div className="experience-grid">
+          {experiences.length ? <div className="experience-grid">
             <ExperienceCard experience={experiences[0]} onSelect={setBooking} />
-            <div className="companion-stack">
-              <ExperienceCard experience={experiences[1]} onSelect={setBooking} />
-              <ExperienceCard experience={experiences[2]} onSelect={setBooking} />
-            </div>
-          </div>
+            {experiences.length > 1 && <div className="companion-stack">
+              {experiences.slice(1).map((experience) => <ExperienceCard key={experience.id} experience={experience} onSelect={setBooking} />)}
+            </div>}
+          </div> : <p>No featured experiences are currently available.</p>}
         </section>
 
         <section className="offline" id="offline">
@@ -567,13 +545,8 @@ export default function App() {
           <div className="section-shell">
             <div className="about-copy">
               <p className="eyebrow">The mission</p>
-              <h2>Fair Direct Coastal Tourism</h2>
-              <p>
-                Born out of the Innovate Mombasa Hackathon, our mission is to empower generational
-                local captains, heritage guides, and storytellers by removing extractive
-                middle-layers. Whether browsing on 5G or dialing from a basic feature phone in
-                Likoni, authentic coastal culture belongs to everyone.
-              </p>
+              <h2>{content.aboutTitle}</h2>
+              <p>{content.aboutDescription}</p>
               <small>Coast Kenya · Open heritage initiative</small>
             </div>
           </div>
