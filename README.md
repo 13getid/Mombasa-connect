@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, Guides, Customers, Availability & Scheduling, and Payments screens with shared light/dark theme and temporary demonstration data. |
+| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, Guides, Customers, Availability & Scheduling, Payments, and USSD Activity screens with shared light/dark theme and temporary demonstration data. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
@@ -79,6 +79,7 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Customers Management derives a searchable, filterable directory and booking histories from the shared admin booking records. Website and USSD-only categories describe booking channels, not verified account status. Matching names and sufficiently complete phone numbers group bookings; name matches alone do not. Email, account IDs, and booking creation dates are unavailable in these admin records.
 - Availability & Scheduling provides a monthly calendar, date filters, booking list and details using the shared admin booking and guide records. Same-guide assignments on the same date are potential issues only; departure times and guide working hours are not recorded, so neither time conflicts nor guide availability can be confirmed.
 - Payments Management is a read-only view of shared demo bookings with search, payment status filters, booking details navigation and filtered CSV export. Totals group full booking amounts by recorded payment status; they are not verified receipts, retained revenue or actual refunds. No transaction IDs, methods, timestamps, received amounts or refund records are stored. Payment verification and refund processing require a future backend and payment provider.
+- USSD Activity derives booking counts, recorded booking value and payment-status counts from shared bookings whose source is `USSD`. Search and booking/payment filters apply to the list and CSV export, and details link to the existing booking workflow. The totals cover all USSD demo bookings, including cancelled and rejected records, not verified revenue or live gateway traffic. Gateway sessions and request logs are not connected; genuine monitoring requires future backend and USSD gateway integration.
 - Other unfinished modules remain explicitly marked future-feature placeholders.
 - Booking, guide-assignment, and tour changes survive navigation between admin screens but reset on reload. The admin tour catalogue does not update the separate public or customer catalogues. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
 - No backend integration, authentication, or access control.
@@ -188,7 +189,7 @@ npm run preview -- --port 4173
 
 Vite's build does not replace the separate TypeScript check. There is currently no automated unit or end-to-end test suite configured in the project scripts.
 
-Run the focused Payments summary and CSV tests with `node --test tests/payments.test.mjs`.
+Run the focused Payments and USSD tests with `node --test tests/payments.test.mjs tests/ussd.test.mjs`.
 
 To format the project:
 
@@ -236,6 +237,10 @@ src/
     PaymentsManagement.tsx Read-only payment status overview and details
     payments.ts        Payment summary and CSV export helpers
     payments-management.css Payment overview styles
+    USSDActivity.tsx   USSD-sourced booking overview and details
+    ussd.ts            USSD booking and export helpers
+    ussd-activity.css  USSD activity styles
+    csv.ts             Shared Admin CSV escaping
     ToursManagement.tsx Demo tour catalogue, filters, and publication actions
     TourEditor.tsx     Demo tour creation and editing
     tours.ts           Tour data, categories, images, and validation

@@ -11,6 +11,7 @@ import CustomersManagement from "./CustomersManagement";
 import CustomerDetails from "./CustomerDetails";
 import AvailabilityManagement from "./AvailabilityManagement";
 import PaymentsManagement from "./PaymentsManagement";
+import USSDActivity from "./USSDActivity";
 import { deriveCustomers } from "./customers";
 import { initialTours, type TourRecord } from "./tours";
 import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
@@ -96,7 +97,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -282,10 +283,11 @@ export default function AdminPortal() {
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
   const [selectedCustomerKey, setSelectedCustomerKey] = useState<string | null>(null);
-  const [bookingOrigin, setBookingOrigin] = useState<"Bookings" | "CustomerDetails" | "Availability" | "Payments">("Bookings");
+  const [bookingOrigin, setBookingOrigin] = useState<"Bookings" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity">("Bookings");
   const [guideOrigin, setGuideOrigin] = useState<"Guides" | "Availability">("Guides");
   const [scheduleVisited, setScheduleVisited] = useState(false);
   const [paymentsVisited, setPaymentsVisited] = useState(false);
+  const [ussdVisited, setUssdVisited] = useState(false);
   const [bookingDate, setBookingDate] = useState("");
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
@@ -302,10 +304,11 @@ export default function AdminPortal() {
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
   const navigate = (label: string) => {
     setMobileNavOpen(false);
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments") {
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity") {
       setPage(label === "Tours & Experiences" ? "Tours" : label === "Availability & Scheduling" ? "Availability" : label);
       if (label === "Availability & Scheduling") setScheduleVisited(true);
       if (label === "Payments") setPaymentsVisited(true);
+      if (label === "USSD Activity") setUssdVisited(true);
       setSelectedBookingRef(null);
       setSelectedTourId(null);
       setSelectedGuideId(null);
@@ -319,7 +322,7 @@ export default function AdminPortal() {
       openFuture(label);
     }
   };
-  const viewBooking = (ref: string, origin: "Bookings" | "CustomerDetails" | "Availability" | "Payments" = "Bookings") => {
+  const viewBooking = (ref: string, origin: "Bookings" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" = "Bookings") => {
     setMobileNavOpen(false);
     setSelectedBookingRef(ref);
     setBookingOrigin(origin);
@@ -373,6 +376,10 @@ export default function AdminPortal() {
     setPage("Payments");
     window.scrollTo({ top: 0 });
   };
+  const backToUssd = () => {
+    setPage("USSD Activity");
+    window.scrollTo({ top: 0 });
+  };
   const changeGuideStatus = (id: string, from: GuideRecord["status"], to: GuideRecord["status"]): boolean => {
     const guide = guides.find((item) => item.id === id);
     if (!guide || guide.status !== from || !canChangeGuideStatus(from, to)) return false;
@@ -395,7 +402,7 @@ export default function AdminPortal() {
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
@@ -410,6 +417,7 @@ export default function AdminPortal() {
         <main className="admin-content">
           {scheduleVisited && <div hidden={page !== "Availability"}><AvailabilityManagement records={records} guides={guides} onViewBooking={(ref) => viewBooking(ref, "Availability")} onViewGuide={(id) => viewGuide(id, "Availability")} onAssignGuide={(ref) => { setBookingOrigin("Availability"); assignGuide(ref); }} /></div>}
           {paymentsVisited && <div hidden={page !== "Payments"}><PaymentsManagement records={records} onViewBooking={(ref) => viewBooking(ref, "Payments")} /></div>}
+          {ussdVisited && <div hidden={page !== "USSD Activity"}><USSDActivity records={records} guides={guides} onViewBooking={(ref) => viewBooking(ref, "USSD Activity")} /></div>}
           {page === "Overview" ? <>
           <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Saturday</b><small>14 November 2026 · Demo</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
           <section className="overview-layout">
@@ -433,7 +441,7 @@ export default function AdminPortal() {
           </> : page === "Bookings"
             ? <BookingsManagement records={records} guides={guides} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
             : page === "BookingDetails"
-            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : bookingOrigin === "USSD Activity" ? backToUssd : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : bookingOrigin === "USSD Activity" ? "USSD Activity" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
             ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef, bookingOrigin) : navigate("Bookings")} />
             : page === "Tours"
@@ -446,7 +454,7 @@ export default function AdminPortal() {
             ? <GuideDetails guide={guides.find((guide) => guide.id === selectedGuideId)} guideId={selectedGuideId ?? ""} records={records} tours={tours} onStatusChange={changeGuideStatus} onBack={guideOrigin === "Availability" ? backToSchedule : () => navigate("Guides")} backLabel={guideOrigin === "Availability" ? "Availability & Scheduling" : "Guides"} onViewBooking={viewBooking} />
             : page === "Customers"
             ? <CustomersManagement customers={customers} onViewCustomer={viewCustomer} />
-            : page === "Availability" || page === "Payments" ? null
+            : page === "Availability" || page === "Payments" || page === "USSD Activity" ? null
             : <CustomerDetails customer={customers.find((customer) => customer.key === selectedCustomerKey)} onBack={() => navigate("Customers")} onViewBooking={(ref) => viewBooking(ref, "CustomerDetails")} />}
         </main>
       </div>

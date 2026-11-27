@@ -4,7 +4,10 @@ import { readFile } from "node:fs/promises";
 import ts from "typescript";
 
 const source = await readFile(new URL("../src/admin/payments.ts", import.meta.url), "utf8");
-const javascript = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
+const csvSource = await readFile(new URL("../src/admin/csv.ts", import.meta.url), "utf8");
+const csvJavascript = ts.transpileModule(csvSource, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText;
+const csvUrl = `data:text/javascript;base64,${Buffer.from(csvJavascript).toString("base64")}`;
+const javascript = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext } }).outputText.replace('"./csv"', JSON.stringify(csvUrl));
 const { paymentCsv, paymentSummary } = await import(`data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`);
 
 const booking = {
