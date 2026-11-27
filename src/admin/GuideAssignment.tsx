@@ -2,14 +2,10 @@ import { useState } from "react";
 import { ArrowLeft, Check, CircleAlert, Search, ShieldX, UserRoundCheck, Users, X } from "lucide-react";
 import { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import { guideInitials, type GuideRecord } from "./guides";
+import GuideStatusBadge from "./GuideStatusBadge";
 import "./guide-assignment.css";
 
 const lockedStatuses = ["Completed", "Cancelled", "Rejected"] as const;
-
-function GuideStatusBadge({ status }: { status: GuideRecord["status"] }) {
-  const tone = status === "Approved" ? "confirmed" : status === "Pending Verification" ? "pending" : "rejected";
-  return <span className={`admin-status ${tone}`}>{status}</span>;
-}
 
 export default function GuideAssignment({
   records,
@@ -47,7 +43,7 @@ export default function GuideAssignment({
   const selectedGuide = guides.find((guide) => guide.id === selectedId);
   const locked = (lockedStatuses as readonly string[]).includes(booking.status);
   const isReassignment = Boolean(booking.assignedGuideId) && selectedId !== booking.assignedGuideId;
-  const canConfirm = !locked && Boolean(selectedGuide) && selectedId !== booking.assignedGuideId;
+  const canConfirm = !locked && selectedGuide?.status === "Approved" && selectedId !== booking.assignedGuideId;
 
   const setAssignedGuide = (guideId: string | null) => {
     // Single primary guide: the one nullable field is replaced, never appended.
@@ -106,7 +102,7 @@ export default function GuideAssignment({
         <div className="booking-details-main">
           <section className="booking-panel">
             <div className="panel-heading"><div><h2>Select a Guide</h2><p>Demonstration guide records · only approved guides can be assigned.</p></div><Users size={17} /></div>
-            <div className="guide-select-list" role="radiogroup" aria-label="Available guides">
+            <div className="guide-select-list" role="radiogroup" aria-label="Guide options">
               {guides.map((guide) => {
                 const selectable = guide.status === "Approved" && !locked;
                 const selected = selectedId === guide.id;
@@ -159,7 +155,7 @@ export default function GuideAssignment({
               {currentGuide ? (
                 <div className="guide-current-card">
                   <span className="admin-avatar">{guideInitials(currentGuide.name)}</span>
-                  <div><b>{currentGuide.name}</b><small>{currentGuide.title}</small><small>{currentGuide.phone}</small></div>
+                  <div><b>{currentGuide.name}</b><small>{currentGuide.title}</small><small>{currentGuide.phone}</small><GuideStatusBadge status={currentGuide.status} />{currentGuide.status !== "Approved" && <small>Existing assignment retained; not eligible for new assignments.</small>}</div>
                 </div>
               ) : booking.assignedGuideId ? (
                 <p className="guide-missing-note"><CircleAlert size={14} /> The assigned guide record ({booking.assignedGuideId}) no longer exists in the demo data. Assign a new guide or remove the assignment.</p>
@@ -185,15 +181,14 @@ export default function GuideAssignment({
               <div className="panel-heading"><div><h2>Confirm Assignment</h2><p>{isReassignment && booking.assignedGuideId ? "The selected guide will replace the current guide." : "Review the selection before saving."}</p></div></div>
               <div className="guide-confirm-body">
                 {selectedGuide ? (
-                  <>
-                    <p>
-                      Assign <b>{selectedGuide.name}</b> as the primary guide for booking <b>{booking.ref}</b>
-                      {isReassignment && currentGuide ? <>, replacing <b>{currentGuide.name}</b></> : null}.
-                    </p>
-                    {selectedId === booking.assignedGuideId
-                      ? <p className="guide-unassigned-note">{selectedGuide.name} is already assigned to this booking.</p>
-                      : <button className="admin-primary-button" type="button" onClick={confirmAssignment}><UserRoundCheck size={16} />{isReassignment ? "Replace Current Guide" : "Confirm Assignment"}</button>}
-                  </>
+                  selectedId === booking.assignedGuideId
+                    ? <p className="guide-unassigned-note">{selectedGuide.name} is already assigned to this booking.</p>
+                    : selectedGuide.status !== "Approved"
+                    ? <p className="guide-unassigned-note">Only approved guides can be assigned. Select another guide.</p>
+                    : <>
+                        <p>Assign <b>{selectedGuide.name}</b> as the primary guide for booking <b>{booking.ref}</b>{isReassignment && currentGuide ? <>, replacing <b>{currentGuide.name}</b></> : null}.</p>
+                        <button className="admin-primary-button" type="button" onClick={confirmAssignment}><UserRoundCheck size={16} />{isReassignment ? "Replace Current Guide" : "Confirm Assignment"}</button>
+                      </>
                 ) : (
                   <p className="guide-unassigned-note">Select an approved guide from the list to continue.</p>
                 )}

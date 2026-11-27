@@ -16,7 +16,8 @@ import {
   X,
 } from "lucide-react";
 import { formatBookingDate, type BookingRecord } from "./BookingsManagement";
-import { findGuide, guideInitials } from "./guides";
+import { findGuide, guideInitials, type GuideRecord } from "./guides";
+import GuideStatusBadge from "./GuideStatusBadge";
 import "./booking-details.css";
 
 const missingValue = <span className="booking-field-missing">Not recorded in demo data</span>;
@@ -32,12 +33,14 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
 
 export default function BookingDetails({
   records,
+  guides,
   bookingRef,
   onRecordsChange,
   onBack,
   onAssignGuide,
 }: {
   records: BookingRecord[];
+  guides: GuideRecord[];
   bookingRef: string;
   onRecordsChange: (records: BookingRecord[]) => void;
   onBack: () => void;
@@ -65,7 +68,7 @@ export default function BookingDetails({
   };
   const canConfirm = booking.status === "Pending";
   const canCancel = booking.status === "Pending" || booking.status === "Confirmed";
-  const assignedGuide = findGuide(booking.assignedGuideId);
+  const assignedGuide = findGuide(guides, booking.assignedGuideId);
   const removeGuide = () => {
     onRecordsChange(records.map((record) => record.ref === booking.ref ? { ...record, assignedGuideId: null } : record));
     setConfirmingRemove(false);
@@ -167,6 +170,8 @@ export default function BookingDetails({
                     <small>{assignedGuide.title} · {assignedGuide.id}</small>
                     <small>{assignedGuide.phone}{assignedGuide.email ? ` · ${assignedGuide.email}` : ""}</small>
                     <small>Speaks {assignedGuide.languages.join(", ")}</small>
+                    <GuideStatusBadge status={assignedGuide.status} />
+                    {assignedGuide.status !== "Approved" && <small>Existing assignment retained; not eligible for new assignments.</small>}
                   </div>
                 </div>
                 {canCancel ? (confirmingRemove ? (

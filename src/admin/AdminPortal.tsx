@@ -5,8 +5,10 @@ import BookingDetails from "./BookingDetails";
 import GuideAssignment from "./GuideAssignment";
 import ToursManagement from "./ToursManagement";
 import TourEditor from "./TourEditor";
+import GuidesManagement from "./GuidesManagement";
+import GuideDetails from "./GuideDetails";
 import { initialTours, type TourRecord } from "./tours";
-import { demoGuides } from "./guides";
+import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
 import { ThemeToggle } from "../shared/theme/theme";
 import {
   Activity,
@@ -89,7 +91,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -273,6 +275,7 @@ export default function AdminPortal() {
   const [guides, setGuides] = useState(demoGuides);
   const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
+  const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
   const [bookingDate, setBookingDate] = useState("");
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
@@ -288,10 +291,11 @@ export default function AdminPortal() {
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
   const navigate = (label: string) => {
     setMobileNavOpen(false);
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences") {
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides") {
       setPage(label === "Tours & Experiences" ? "Tours" : label);
       setSelectedBookingRef(null);
       setSelectedTourId(null);
+      setSelectedGuideId(null);
       setQuery("");
       setBookingDate("");
       window.scrollTo({ top: 0 });
@@ -325,6 +329,19 @@ export default function AdminPortal() {
     setPage("TourEditor");
     window.scrollTo({ top: 0 });
   };
+  const viewGuide = (id: string) => {
+    setMobileNavOpen(false);
+    setSelectedGuideId(id);
+    setPage("GuideDetails");
+    setQuery("");
+    window.scrollTo({ top: 0 });
+  };
+  const changeGuideStatus = (id: string, from: GuideRecord["status"], to: GuideRecord["status"]): boolean => {
+    const guide = guides.find((item) => item.id === id);
+    if (!guide || guide.status !== from || !canChangeGuideStatus(from, to)) return false;
+    setGuides((current) => current.map((item) => item.id === id && item.status === from ? { ...item, status: to } : item));
+    return true;
+  };
   const saveTour = (tour: TourRecord, previousName: string | null) => {
     setTours((current) => current.some((item) => item.id === tour.id)
       ? current.map((item) => item.id === tour.id ? tour : item)
@@ -341,13 +358,14 @@ export default function AdminPortal() {
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
           : page === "GuideAssignment" ? ["Bookings", selectedBookingRef ?? "Booking", "Assign Guide"]
           : page === "Tours" ? ["Tours & Experiences"]
           : page === "TourEditor" ? ["Tours & Experiences", selectedTourId ? tours.find((tour) => tour.id === selectedTourId)?.name ?? selectedTourId : "New Tour"]
+          : page === "GuideDetails" ? ["Guides", "Guide Details"]
           : [page]
         } query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
         <main className="admin-content">
@@ -368,18 +386,22 @@ export default function AdminPortal() {
           <aside className="overview-rail">
             <CalendarWidget records={records} onSelectDate={(date) => { navigate("Bookings"); setBookingDate(date); }} />
             <UpcomingTours records={records} tours={tours} onView={() => navigate("Bookings")} />
-            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: bookingsNeedingGuide, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Bookings" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
+            <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: guides.filter((guide) => guide.status === "Pending Verification").length, text: "sample guides awaiting verification", icon: Users, target: "Guides" }, { count: bookingsNeedingGuide, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Bookings" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
           </aside>
           </section>
           </> : page === "Bookings"
-            ? <BookingsManagement records={records} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
+            ? <BookingsManagement records={records} guides={guides} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
             : page === "BookingDetails"
-            ? <BookingDetails records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
             ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef) : navigate("Bookings")} />
             : page === "Tours"
             ? <ToursManagement tours={tours} onToursChange={setTours} bookings={records} onEditTour={editTour} onCreateTour={createTour} />
-            : <TourEditor tours={tours} tourId={selectedTourId} onSave={saveTour} onBack={() => navigate("Tours & Experiences")} />}
+            : page === "TourEditor"
+            ? <TourEditor tours={tours} tourId={selectedTourId} onSave={saveTour} onBack={() => navigate("Tours & Experiences")} />
+            : page === "Guides"
+            ? <GuidesManagement guides={guides} records={records} onViewGuide={viewGuide} />
+            : <GuideDetails guide={guides.find((guide) => guide.id === selectedGuideId)} guideId={selectedGuideId ?? ""} records={records} tours={tours} onStatusChange={changeGuideStatus} onBack={() => navigate("Guides")} onViewBooking={viewBooking} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}

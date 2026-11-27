@@ -4,10 +4,16 @@ export type GuideRecord = {
   phone: string;
   email?: string;
   title: string;
-  status: "Approved" | "Pending Verification" | "Suspended";
+  status: "Approved" | "Pending Verification" | "Rejected" | "Suspended";
   languages: string[];
   tours: string[];
 };
+
+export function canChangeGuideStatus(from: GuideRecord["status"], to: GuideRecord["status"]): boolean {
+  return (from === "Pending Verification" && (to === "Approved" || to === "Rejected"))
+    || (from === "Approved" && to === "Suspended")
+    || (from === "Suspended" && to === "Approved");
+}
 
 /**
  * Demonstration guide records. Ali Bakari matches the existing guide portal
@@ -22,8 +28,8 @@ export const demoGuides: GuideRecord[] = [
   { id: "MTD-G-0108", name: "Omar Said", phone: "+254 728 330 571", title: "Dhow captain", status: "Suspended", languages: ["Swahili"], tours: ["Tudor Creek Dhow Ride"] },
 ];
 
-export function findGuide(id: string | null | undefined): GuideRecord | undefined {
-  return id ? demoGuides.find((guide) => guide.id === id) : undefined;
+export function findGuide(guides: GuideRecord[], id: string | null | undefined): GuideRecord | undefined {
+  return id ? guides.find((guide) => guide.id === id) : undefined;
 }
 
 export function guideInitials(name: string): string {

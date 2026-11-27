@@ -1,0 +1,26 @@
+.guides-stats-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.guides-filter-panel { grid-template-columns: minmax(0, 1fr) auto; }
+.guides-table-wrap table { min-width: 1030px; }
+.guides-directory-person { display: flex; align-items: center; gap: 10px; }
+.guides-name-button { padding: 0; border: 0; color: var(--ocean-deep); background: transparent; font-weight: 600; text-align: left; }
+.guides-name-button:hover { color: var(--teal-dark); }
+.guides-directory-person small, .guides-cell-secondary { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+.guides-specialities-cell { display: block; max-width: 260px; padding: 8px 0; white-space: normal; line-height: 1.5; }
+.guides-view-button { padding: 4px 0; border: 0; color: var(--teal-dark); background: transparent; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.guides-directory-note { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+.guides-directory-note svg { flex: none; color: var(--teal-dark); }
+.guides-speciality-list { padding: 2px 20px 20px; display: grid; gap: 8px; list-style: none; }
+.guides-speciality-list li { padding: 9px 11px; color: var(--ocean-deep); background: var(--soft); font-size: 12px; overflow-wrap: anywhere; }
+.guides-speciality-list small { display: block; margin-top: 4px; color: var(--warning-strong); }
+.guides-empty { padding: 2px 20px 20px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.guides-assignment-table { padding-bottom: 12px; }
+.guides-assignment-table table { min-width: 640px; }
+.guides-verification { padding: 2px 20px 20px; display: grid; justify-items: start; gap: 12px; }
+.guides-verification p { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.guides-status-actions, .guides-confirm, .guides-confirm > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.guides-confirm { flex-direction: column; }
+.guides-confirm > p { color: var(--ocean-deep); font-size: 12px; }
+.guides-error { padding: 12px 14px; border: 1px solid var(--line-strong); color: var(--danger-strong); background: var(--danger-soft); font-size: 12px; }
+@media (max-width: 1200px) { .guides-stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .guides-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .guides-stats-grid, .guides-filter-panel { grid-template-columns: 1fr; } }

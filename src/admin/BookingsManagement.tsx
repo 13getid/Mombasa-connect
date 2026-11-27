@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Clock3, Download, Search, TicketCheck, X } from "lucide-react";
-import { findGuide } from "./guides";
+import { findGuide, type GuideRecord } from "./guides";
+import GuideStatusBadge from "./GuideStatusBadge";
 import "./bookings.css";
 
 export type BookingRecord = {
@@ -25,6 +26,7 @@ export function formatBookingDate(date: string) {
 
 export default function BookingsManagement({
   records,
+  guides,
   onRecordsChange,
   query,
   onQuery,
@@ -33,6 +35,7 @@ export default function BookingsManagement({
   onAssignGuide,
 }: {
   records: BookingRecord[];
+  guides: GuideRecord[];
   onRecordsChange: (records: BookingRecord[]) => void;
   query: string;
   onQuery: (query: string) => void;
@@ -70,7 +73,7 @@ export default function BookingsManagement({
   const exportRows = () => {
     const rows = [
       ["Booking Reference", "Customer", "Phone", "Experience", "Experience Date", "Guests", "Source", "Amount (KES)", "Payment", "Status", "Assigned Guide"],
-      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status, record.assignedGuideId ? findGuide(record.assignedGuideId)?.name ?? "Unknown guide" : "Unassigned"]),
+      ...filtered.map((record) => [record.ref, record.customer, record.phone, record.experience, record.date, record.guests, record.source, record.amount, record.payment, record.status, record.assignedGuideId ? findGuide(guides, record.assignedGuideId)?.name ?? "Unknown guide" : "Unassigned"]),
     ];
     const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -137,7 +140,9 @@ export default function BookingsManagement({
         <div className="admin-table-wrap bookings-table-wrap">
           <table>
             <thead><tr><th>Booking reference</th><th>Customer</th><th>Tour / Experience</th><th>Experience date</th><th>Guests</th><th>Source</th><th>Amount</th><th>Payment</th><th>Status</th><th>Guide</th><th>Actions</th></tr></thead>
-            <tbody>{filtered.map((record) => (
+            <tbody>{filtered.map((record) => {
+              const guide = findGuide(guides, record.assignedGuideId);
+              return (
               <tr key={record.ref}>
                 <td><b>{record.ref}</b></td>
                 <td><b>{record.customer}</b><small className="booking-customer-phone">{record.phone}</small></td>
@@ -146,7 +151,7 @@ export default function BookingsManagement({
                 <td><b>KES {record.amount.toLocaleString("en-KE")}</b></td>
                 <td><span className={`booking-payment payment-${record.payment.toLowerCase()}`}>{record.payment}</span></td>
                 <td><span className={`admin-status ${record.status.toLowerCase()}`}>{record.status}</span></td>
-                <td>{record.assignedGuideId ? findGuide(record.assignedGuideId)?.name ?? "Unknown guide" : <span className="booking-guide-unassigned">Unassigned</span>}</td>
+                <td>{guide ? <>{guide.name}{guide.status !== "Approved" && <div><GuideStatusBadge status={guide.status} /></div>}</> : record.assignedGuideId ? "Unknown guide" : <span className="booking-guide-unassigned">Unassigned</span>}</td>
                 <td><details className="booking-actions"><summary aria-label={`Actions for ${record.ref}`}>Actions</summary>
                   <div>
                     <button type="button" onClick={() => onViewBooking(record.ref)}>View Booking</button>
@@ -158,7 +163,8 @@ export default function BookingsManagement({
                   </div>
                 </details></td>
               </tr>
-            ))}</tbody>
+              );
+            })}</tbody>
           </table>
         </div>
         {filtered.length === 0 && <div className="table-empty"><Search size={20} /><b>No reservations match these filters</b><span>Adjust or clear the filters to see bookings.</span><button type="button" className="clear-filters" onClick={clearFilters}>Clear filters</button></div>}
