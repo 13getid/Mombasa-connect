@@ -27,6 +27,7 @@
 .booking-payment { padding: 4px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
 .payment-paid { color: var(--paid-strong); background: var(--paid-soft); }
 .payment-pending { color: var(--warning-strong); background: var(--warning-soft); }
+.payment-unpaid { color: var(--neutral-strong); background: var(--neutral-soft); }
 .payment-failed, .admin-status.rejected { color: var(--danger-strong); background: var(--danger-soft); }
 .payment-refunded { color: var(--refund-strong); background: var(--refund-soft); }
 .admin-status.cancelled { color: var(--neutral-strong); background: var(--neutral-soft); }

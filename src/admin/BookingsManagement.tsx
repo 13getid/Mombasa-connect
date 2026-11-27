@@ -13,7 +13,7 @@ export type BookingRecord = {
   guests: number;
   source: "Website" | "USSD";
   amount: number;
-  payment: "Paid" | "Pending" | "Failed" | "Refunded";
+  payment: "Paid" | "Pending" | "Unpaid" | "Failed" | "Refunded";
   status: "Pending" | "Confirmed" | "Completed" | "Cancelled" | "Rejected";
   assignedGuideId: string | null;
 };
@@ -127,7 +127,7 @@ export default function BookingsManagement({
           <option>All Tours</option>{[...new Set(records.map((record) => record.experience))].map((name) => <option key={name}>{name}</option>)}
         </select></label>
         <label><span>Source</span><select value={source} onChange={(event) => setSource(event.target.value)}><option>All Sources</option><option>Website</option><option>USSD</option></select></label>
-        <label><span>Payment</span><select value={payment} onChange={(event) => setPayment(event.target.value)}><option>All Payments</option><option>Paid</option><option>Pending</option><option>Failed</option><option>Refunded</option></select></label>
+        <label><span>Payment</span><select value={payment} onChange={(event) => setPayment(event.target.value)}><option>All Payments</option><option>Paid</option><option>Pending</option><option>Unpaid</option><option>Failed</option><option>Refunded</option></select></label>
         <label><span>Experience date</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
         <button type="button" className="clear-filters" onClick={clearFilters}>Clear filters</button>
       </section>
