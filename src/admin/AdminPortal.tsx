@@ -6,6 +6,7 @@ import GuideAssignment from "./GuideAssignment";
 import ToursManagement from "./ToursManagement";
 import TourEditor from "./TourEditor";
 import { initialTours, type TourRecord } from "./tours";
+import { demoGuides } from "./guides";
 import { ThemeToggle } from "../shared/theme/theme";
 import {
   Activity,
@@ -231,7 +232,7 @@ function CalendarWidget({ records, onSelectDate }: { records: BookingRecord[]; o
   );
 }
 
-function UpcomingTours({ records, onView }: { records: BookingRecord[]; onView: () => void }) {
+function UpcomingTours({ records, tours, onView }: { records: BookingRecord[]; tours: TourRecord[]; onView: () => void }) {
   const upcoming = records
     .filter((record) => record.status === "Pending" || record.status === "Confirmed")
     .slice()
@@ -242,7 +243,7 @@ function UpcomingTours({ records, onView }: { records: BookingRecord[]; onView: 
       <div className="panel-heading"><div><h2>Upcoming Tours</h2><p>Next demo departures</p></div><button className="panel-link" type="button" onClick={onView}>View bookings <ArrowRight size={14} /></button></div>
       <div className="overview-upcoming-list">
         {upcoming.map((record) => {
-          const experience = experiences.find((item) => item.name === record.experience);
+          const experience = tours.find((item) => item.name === record.experience) ?? experiences.find((item) => item.name === record.experience);
           return <article key={record.ref}>
             {experience && <img src={experience.image} alt="" />}
             <div><StatusBadge status={record.status} /><h3>{record.experience}</h3><p>{formatBookingDate(record.date)} · {record.guests} {record.guests === 1 ? "guest" : "guests"}</p></div>
@@ -269,6 +270,7 @@ export default function AdminPortal() {
   const [page, setPage] = useState<AdminPage>("Overview");
   const [records, setRecords] = useState(initialBookings);
   const [tours, setTours] = useState(initialTours);
+  const [guides, setGuides] = useState(demoGuides);
   const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [bookingDate, setBookingDate] = useState("");
@@ -330,6 +332,9 @@ export default function AdminPortal() {
     // Bookings reference tours by name; keep the link intact when a tour is renamed.
     if (previousName && previousName !== tour.name) {
       setRecords((current) => current.map((record) => record.experience === previousName ? { ...record, experience: tour.name } : record));
+      setGuides((current) => current.map((guide) => guide.tours.includes(previousName)
+        ? { ...guide, tours: guide.tours.map((name) => name === previousName ? tour.name : name) }
+        : guide));
     }
     setSelectedTourId(tour.id);
   };
@@ -362,7 +367,7 @@ export default function AdminPortal() {
           </div>
           <aside className="overview-rail">
             <CalendarWidget records={records} onSelectDate={(date) => { navigate("Bookings"); setBookingDate(date); }} />
-            <UpcomingTours records={records} onView={() => navigate("Bookings")} />
+            <UpcomingTours records={records} tours={tours} onView={() => navigate("Bookings")} />
             <section className="attention-panel"><div className="panel-heading"><div><h2>Needs Your Attention</h2><p>Demonstration items awaiting action.</p></div></div><div className="attention-list">{[{ count: pendingBookings, text: "sample bookings awaiting review", icon: TicketCheck, target: "Bookings" }, { count: 5, text: "guides awaiting verification", icon: Users, target: "Guides" }, { count: bookingsNeedingGuide, text: "bookings requiring guide assignment", icon: TriangleAlert, target: "Bookings" }].map(({ count, text, icon: Icon, target }) => <article key={text}><span className="attention-icon"><Icon size={17} /></span><strong>{count}</strong><p>{text}</p><button type="button" onClick={() => navigate(target)}>Review <ArrowRight size={13} /></button></article>)}</div></section>
           </aside>
           </section>
@@ -371,7 +376,7 @@ export default function AdminPortal() {
             : page === "BookingDetails"
             ? <BookingDetails records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
-            ? <GuideAssignment records={records} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef) : navigate("Bookings")} />
+            ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef) : navigate("Bookings")} />
             : page === "Tours"
             ? <ToursManagement tours={tours} onToursChange={setTours} bookings={records} onEditTour={editTour} onCreateTour={createTour} />
             : <TourEditor tours={tours} tourId={selectedTourId} onSave={saveTour} onBack={() => navigate("Tours & Experiences")} />}

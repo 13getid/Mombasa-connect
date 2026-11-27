@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { CircleCheck, CircleSlash, Compass, Pencil, Plus, Search } from "lucide-react";
 import type { BookingRecord } from "./BookingsManagement";
-import { tourCategories, type TourRecord } from "./tours";
+import { tourCategories, validateTour, type TourRecord } from "./tours";
 import "./tours.css";
 
-const statusFilters = ["All Tours", "Published", "Draft"] as const;
+const statusFilters = ["All Tours", "Published", "Draft", "Unpublished"] as const;
 
 export default function ToursManagement({
   tours,
@@ -22,6 +22,7 @@ export default function ToursManagement({
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [status, setStatus] = useState<(typeof statusFilters)[number]>("All Tours");
+  const [publicationError, setPublicationError] = useState<string | null>(null);
 
   const filtered = tours.filter((tour) => {
     const text = `${tour.id} ${tour.name} ${tour.category} ${tour.location}`.toLowerCase();
@@ -29,10 +30,18 @@ export default function ToursManagement({
       && (category === "All Categories" || tour.category === category)
       && (status === "All Tours" || tour.status === status);
   });
-  const published = tours.filter((tour) => tour.status === "Published").length;
+  const count = (value: TourRecord["status"]) => tours.filter((tour) => tour.status === value).length;
   const bookingCount = (name: string) => bookings.filter((booking) => booking.experience === name).length;
-  const setStatusFor = (id: string, nextStatus: TourRecord["status"]) => {
-    onToursChange(tours.map((tour) => tour.id === id ? { ...tour, status: nextStatus } : tour));
+  const setStatusFor = (selected: TourRecord, nextStatus: "Published" | "Unpublished") => {
+    if (nextStatus === "Published") {
+      const errors = validateTour(selected, tours, selected.id);
+      if (Object.keys(errors).length) {
+        setPublicationError(`Cannot publish ${selected.name || selected.id}: ${Object.values(errors).join(" ")} Edit the tour to correct these details.`);
+        return;
+      }
+    }
+    setPublicationError(null);
+    onToursChange(tours.map((tour) => tour.id === selected.id ? { ...tour, status: nextStatus } : tour));
   };
   const clearFilters = () => {
     setQuery("");
@@ -47,7 +56,7 @@ export default function ToursManagement({
           <p className="admin-eyebrow">Tour catalogue</p>
           <h1>Tours &amp; Experiences</h1>
           <p>Create, edit and publish the experiences offered on Mombasa Connect.</p>
-          <p className="bookings-demo-note">Demo catalogue only. Changes are temporary and do not update the public website.</p>
+          <p className="bookings-demo-note">Demo catalogue only. Changes reset on reload and do not update the public or customer catalogues.</p>
         </div>
         <button className="admin-primary-button" type="button" onClick={onCreateTour}><Plus size={16} /> New Tour</button>
       </section>
@@ -55,8 +64,9 @@ export default function ToursManagement({
       <section className="booking-stats-grid tours-stats-grid" aria-label="Demo catalogue summary">
         {([
           ["Total tours", tours.length, Compass],
-          ["Published", published, CircleCheck],
-          ["Drafts", tours.length - published, CircleSlash],
+          ["Published", count("Published"), CircleCheck],
+          ["Drafts", count("Draft"), CircleSlash],
+          ["Unpublished", count("Unpublished"), CircleSlash],
         ] as const).map(([label, value, Icon]) => (
           <article key={label}>
             <span><Icon size={18} /></span>
@@ -64,6 +74,8 @@ export default function ToursManagement({
           </article>
         ))}
       </section>
+
+      {publicationError && <div className="tour-publication-error" role="alert">{publicationError}</div>}
 
       <section className="booking-filter-panel tours-filter-panel" aria-label="Filter tours">
         <label className="booking-search">
@@ -104,9 +116,9 @@ export default function ToursManagement({
                 <td>
                   <div className="tour-row-actions">
                     <button type="button" onClick={() => onEditTour(tour.id)}><Pencil size={13} /> Edit</button>
-                    {tour.status === "Draft"
-                      ? <button type="button" onClick={() => setStatusFor(tour.id, "Published")}>Publish</button>
-                      : <button type="button" onClick={() => setStatusFor(tour.id, "Draft")}>Unpublish</button>}
+                    {tour.status === "Published"
+                      ? <button type="button" onClick={() => setStatusFor(tour, "Unpublished")}>Unpublish</button>
+                      : <button type="button" onClick={() => setStatusFor(tour, "Published")}>Publish</button>}
                   </div>
                 </td>
               </tr>

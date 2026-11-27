@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Check, Save, Search } from "lucide-react";
-import { nextTourId, tourCategories, tourImages, type TourCategory, type TourRecord } from "./tours";
+import { nextTourId, tourCategories, tourImages, validateTour, type TourCategory, type TourErrors, type TourRecord } from "./tours";
 import "./tours.css";
 
 type TourDraft = {
@@ -14,24 +14,10 @@ type TourDraft = {
   image: string;
 };
 
-type DraftErrors = Partial<Record<keyof TourDraft, string>>;
-
 function toDraft(tour: TourRecord | undefined): TourDraft {
   return tour
     ? { name: tour.name, category: tour.category, shortDescription: tour.shortDescription, fullDescription: tour.fullDescription, location: tour.location, duration: tour.duration, price: String(tour.price), image: tour.image }
     : { name: "", category: tourCategories[0], shortDescription: "", fullDescription: "", location: "", duration: "", price: "", image: tourImages[0].value };
-}
-
-function validate(draft: TourDraft): DraftErrors {
-  const errors: DraftErrors = {};
-  if (!draft.name.trim()) errors.name = "Enter a tour name.";
-  if (!draft.shortDescription.trim()) errors.shortDescription = "Enter a short description.";
-  if (!draft.fullDescription.trim()) errors.fullDescription = "Enter a full description.";
-  if (!draft.location.trim()) errors.location = "Enter a location.";
-  if (!draft.duration.trim()) errors.duration = "Enter a duration, for example 1–2 hours.";
-  const price = Number(draft.price);
-  if (!draft.price.trim() || !Number.isFinite(price) || price <= 0) errors.price = "Enter a price in KES greater than zero.";
-  return errors;
 }
 
 export default function TourEditor({
@@ -47,7 +33,7 @@ export default function TourEditor({
 }) {
   const existing = tourId ? tours.find((tour) => tour.id === tourId) : undefined;
   const [draft, setDraft] = useState<TourDraft>(() => toDraft(existing));
-  const [errors, setErrors] = useState<DraftErrors>({});
+  const [errors, setErrors] = useState<TourErrors>({});
   const [saved, setSaved] = useState<string | null>(null);
 
   if (tourId && !existing) {
@@ -68,7 +54,7 @@ export default function TourEditor({
     setDraft((current) => ({ ...current, [key]: value }));
   };
   const save = (status: TourRecord["status"]) => {
-    const nextErrors = validate(draft);
+    const nextErrors = validateTour(draft, tours, existing?.id);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       setSaved(null);
@@ -118,7 +104,7 @@ export default function TourEditor({
       <div className="booking-details-layout tour-editor-layout">
         <div className="booking-details-main">
           <section className="booking-panel">
-            <div className="panel-heading"><div><h2>Tour Information</h2><p>Details shown to customers in the catalogue.</p></div></div>
+            <div className="panel-heading"><div><h2>Tour Information</h2><p>Details in the admin demo catalogue.</p></div></div>
             <div className="tour-form-grid">
               <label className={errors.name ? "invalid" : ""}>
                 <span>Tour name</span>
@@ -174,15 +160,15 @@ export default function TourEditor({
 
         <aside className="booking-details-rail">
           <section className="booking-panel">
-            <div className="panel-heading"><div><h2>Save Tour</h2><p>Drafts stay hidden from customers until published.</p></div></div>
+            <div className="panel-heading"><div><h2>Save Tour</h2><p>Demo changes do not update the public or customer catalogues.</p></div></div>
             <div className="booking-actions-list">
               <button className="admin-primary-button" type="button" onClick={() => save("Published")}><Check size={16} /> Save &amp; Publish</button>
-              <button className="booking-outline-button" type="button" onClick={() => save("Draft")}><Save size={14} /> Save as Draft</button>
+              <button className="booking-outline-button" type="button" onClick={() => save(existing && existing.status !== "Draft" ? "Unpublished" : "Draft")}><Save size={14} /> {existing && existing.status !== "Draft" ? "Save as Unpublished" : "Save as Draft"}</button>
             </div>
           </section>
 
           <section className="booking-panel">
-            <div className="panel-heading"><div><h2>Preview</h2><p>How the tour appears in listings.</p></div></div>
+            <div className="panel-heading"><div><h2>Preview</h2><p>Preview of the demo tour details.</p></div></div>
             <div className="tour-preview">
               <img src={draft.image} alt="" />
               <div>

@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Connected Overview, Bookings Management, Booking Details, and Guide Assignment screens with the shared light/dark theme, an interactive calendar, reservation filters, CSV exports, and temporary booking status and guide-assignment changes; demonstration data only. |
+| Admin portal | Connected Overview, Bookings, Guide Assignment, and Tours & Experiences screens with shared light/dark theme and temporary demonstration data. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
@@ -65,7 +65,7 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 ### Admin Portal
 
-- Shared `/admin` shell with Overview, Bookings Management, Booking Details, and Guide Assignment screens, active navigation, breadcrumbs, search, notifications, the shared light/dark theme toggle, and responsive navigation.
+- Shared `/admin` shell with Overview, Bookings Management, Booking Details, Guide Assignment, and Tours & Experiences screens, active navigation, breadcrumbs, search, notifications, the shared light/dark theme toggle, and responsive navigation.
 - Refreshed Overview with performance cards, booking activity and channel charts, an operations summary, recent bookings, popular experiences, and an upcoming-tours panel.
 - Interactive calendar with previous/next month controls and highlighted dates containing pending or confirmed sample bookings.
 - Selecting a calendar date opens Bookings Management filtered by experience date, including an empty state for dates without bookings.
@@ -74,8 +74,9 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Temporary confirmation and cancellation actions, with shared booking statuses reflected in Overview records, scheduled calendar dates, and pending-booking counts.
 - Booking Details screen opened from any reservation, showing customer, experience, payment, booking source, guide assignment, and a demonstration timeline; fields missing from the demo data are clearly labelled, and payment status stays separate from booking status.
 - Guide Assignment for pending and confirmed bookings: one primary guide per booking, selected from demonstration guide records with explicit confirmation for assignment, replacement, and removal. Only approved demo guides are assignable; completed, cancelled, and rejected bookings are locked.
-- Tours management, guide management, and other unfinished modules remain explicitly marked future-feature placeholders.
-- Booking and guide-assignment changes survive navigation between admin screens but reset on reload. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
+- Tours & Experiences supports searching, filtering, creating, editing, and publishing demo tours. Draft, Published, and Unpublished are distinct admin states; tour names must be unique, ignoring case and surrounding whitespace.
+- Guide management and other unfinished modules remain explicitly marked future-feature placeholders.
+- Booking, guide-assignment, and tour changes survive navigation between admin screens but reset on reload. The admin tour catalogue does not update the separate public or customer catalogues. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
 - No backend integration, authentication, or access control.
 
 ### Shared Appearance
@@ -214,6 +215,10 @@ src/
     GuideAssignment.tsx Primary-guide selection, replacement, and removal
     guide-assignment.css Guide Assignment styles
     guides.ts          Demonstration guide records and lookup helpers
+    ToursManagement.tsx Demo tour catalogue, filters, and publication actions
+    TourEditor.tsx     Demo tour creation and editing
+    tours.ts           Tour data, categories, images, and validation
+    tours.css          Tours & Experiences styles
     README.md          Admin portal and integration guidance
   shared/
     auth/

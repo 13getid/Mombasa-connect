@@ -17,8 +17,27 @@ export type TourRecord = {
   duration: string;
   price: number;
   image: string;
-  status: "Published" | "Draft";
+  status: "Published" | "Draft" | "Unpublished";
 };
+
+export type TourInput = Omit<TourRecord, "id" | "status" | "price"> & { price: string | number };
+export type TourErrors = Partial<Record<keyof TourInput, string>>;
+
+export function validateTour(tour: TourInput, tours: TourRecord[], currentId?: string): TourErrors {
+  const errors: TourErrors = {};
+  const name = tour.name.trim().toLowerCase();
+  if (!name) errors.name = "Enter a tour name.";
+  else if (tours.some((item) => item.id !== currentId && item.name.trim().toLowerCase() === name)) {
+    errors.name = "A tour with this name already exists.";
+  }
+  if (!tour.shortDescription.trim()) errors.shortDescription = "Enter a short description.";
+  if (!tour.fullDescription.trim()) errors.fullDescription = "Enter a full description.";
+  if (!tour.location.trim()) errors.location = "Enter a location.";
+  if (!tour.duration.trim()) errors.duration = "Enter a duration, for example 1–2 hours.";
+  const price = String(tour.price).trim();
+  if (!price || !Number.isFinite(Number(price)) || Number(price) <= 0) errors.price = "Enter a price in KES greater than zero.";
+  return errors;
+}
 
 /** Existing local photographs available for tour imagery. */
 export const tourImages = [
@@ -31,7 +50,7 @@ export const tourImages = [
 /**
  * Demonstration tour catalogue. The three published tours mirror the
  * existing public-website and customer-portal experience records; the
- * draft is a demonstration entry for the unpublished state.
+ * draft is a demonstration entry that has never been published.
  */
 export const initialTours: TourRecord[] = [
   {
@@ -79,7 +98,7 @@ export const initialTours: TourRecord[] = [
     category: "Cultural Experiences",
     shortDescription: "Demonstration draft: scents, flavours and traders of Mackinnon Market.",
     fullDescription:
-      "A demonstration draft tour through Mombasa's historic spice market. This entry exists to illustrate the unpublished state and is not a live experience.",
+      "A demonstration draft tour through Mombasa's historic spice market. This entry has not been published and is not a live experience.",
     location: "Mackinnon Market, Mombasa",
     duration: "1–2 hours",
     price: 1000,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Check, CircleAlert, Search, ShieldX, UserRoundCheck, Users, X } from "lucide-react";
 import { formatBookingDate, type BookingRecord } from "./BookingsManagement";
-import { demoGuides, findGuide, guideInitials, type GuideRecord } from "./guides";
+import { guideInitials, type GuideRecord } from "./guides";
 import "./guide-assignment.css";
 
 const lockedStatuses = ["Completed", "Cancelled", "Rejected"] as const;
@@ -13,11 +13,13 @@ function GuideStatusBadge({ status }: { status: GuideRecord["status"] }) {
 
 export default function GuideAssignment({
   records,
+  guides,
   bookingRef,
   onRecordsChange,
   onBack,
 }: {
   records: BookingRecord[];
+  guides: GuideRecord[];
   bookingRef: string;
   onRecordsChange: (records: BookingRecord[]) => void;
   onBack: () => void;
@@ -41,8 +43,8 @@ export default function GuideAssignment({
     );
   }
 
-  const currentGuide = findGuide(booking.assignedGuideId);
-  const selectedGuide = findGuide(selectedId);
+  const currentGuide = guides.find((guide) => guide.id === booking.assignedGuideId);
+  const selectedGuide = guides.find((guide) => guide.id === selectedId);
   const locked = (lockedStatuses as readonly string[]).includes(booking.status);
   const isReassignment = Boolean(booking.assignedGuideId) && selectedId !== booking.assignedGuideId;
   const canConfirm = !locked && Boolean(selectedGuide) && selectedId !== booking.assignedGuideId;
@@ -105,7 +107,7 @@ export default function GuideAssignment({
           <section className="booking-panel">
             <div className="panel-heading"><div><h2>Select a Guide</h2><p>Demonstration guide records · only approved guides can be assigned.</p></div><Users size={17} /></div>
             <div className="guide-select-list" role="radiogroup" aria-label="Available guides">
-              {demoGuides.map((guide) => {
+              {guides.map((guide) => {
                 const selectable = guide.status === "Approved" && !locked;
                 const selected = selectedId === guide.id;
                 const isCurrent = booking.assignedGuideId === guide.id;
