@@ -38,6 +38,7 @@ export default function BookingDetails({
   onRecordsChange,
   onBack,
   onAssignGuide,
+  backLabel = "Bookings",
 }: {
   records: BookingRecord[];
   guides: GuideRecord[];
@@ -45,6 +46,7 @@ export default function BookingDetails({
   onRecordsChange: (records: BookingRecord[]) => void;
   onBack: () => void;
   onAssignGuide: () => void;
+  backLabel?: string;
 }) {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const booking = records.find((record) => record.ref === bookingRef);
@@ -52,12 +54,12 @@ export default function BookingDetails({
   if (!booking) {
     return (
       <div className="booking-details-page">
-        <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to Bookings</button>
+        <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to {backLabel}</button>
         <section className="booking-panel booking-not-found">
           <Search size={22} />
           <h1>Booking not found</h1>
           <p>No reservation matches the reference {bookingRef || "provided"} in the current demo records.</p>
-          <button className="admin-primary-button" type="button" onClick={onBack}>Return to Bookings Management</button>
+          <button className="admin-primary-button" type="button" onClick={onBack}>Return to {backLabel}</button>
         </section>
       </div>
     );
@@ -86,7 +88,7 @@ export default function BookingDetails({
     <div className="booking-details-page">
       <section className="booking-details-header">
         <div>
-          <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to Bookings</button>
+          <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to {backLabel}</button>
           <p className="admin-eyebrow">Reservation record</p>
           <div className="booking-ref-row">
             <h1>{booking.ref}</h1>

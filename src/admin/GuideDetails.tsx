@@ -12,7 +12,7 @@ function Field({ label, value }: { label: string; value: ReactNode }) {
   return <div className="booking-field"><span>{label}</span><b>{value}</b></div>;
 }
 
-export default function GuideDetails({ guide, guideId, records, tours, onStatusChange, onBack, onViewBooking }: {
+export default function GuideDetails({ guide, guideId, records, tours, onStatusChange, onBack, onViewBooking, backLabel = "Guides" }: {
   guide: GuideRecord | undefined;
   guideId: string;
   records: BookingRecord[];
@@ -20,13 +20,14 @@ export default function GuideDetails({ guide, guideId, records, tours, onStatusC
   onStatusChange: (id: string, from: GuideStatus, to: GuideStatus) => boolean;
   onBack: () => void;
   onViewBooking: (ref: string) => void;
+  backLabel?: string;
 }) {
   const [confirming, setConfirming] = useState<GuideStatus | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!guide) {
-    return <div className="booking-details-page"><button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to Guides</button><section className="booking-panel booking-not-found"><Search size={22} /><h1>Guide not found</h1><p>No guide matches {guideId || "the selected ID"} in the demo directory.</p><button className="admin-primary-button" type="button" onClick={onBack}>Return to Guides</button></section></div>;
+    return <div className="booking-details-page"><button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to {backLabel}</button><section className="booking-panel booking-not-found"><Search size={22} /><h1>Guide not found</h1><p>No guide matches {guideId || "the selected ID"} in the demo directory.</p><button className="admin-primary-button" type="button" onClick={onBack}>Return to {backLabel}</button></section></div>;
   }
 
   const assignments = records.filter((record) => record.assignedGuideId === guide.id && (record.status === "Pending" || record.status === "Confirmed"));
@@ -49,7 +50,7 @@ export default function GuideDetails({ guide, guideId, records, tours, onStatusC
   return (
     <div className="booking-details-page guide-details-page">
       <section className="booking-details-header">
-        <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to Guides</button>
+        <button className="booking-back" type="button" onClick={onBack}><ArrowLeft size={15} /> Back to {backLabel}</button>
         <p className="admin-eyebrow">Guide profile</p>
         <div className="booking-ref-row"><span className="admin-avatar">{guideInitials(guide.name)}</span><h1>{guide.name}</h1><GuideStatusBadge status={guide.status} /></div>
         <p className="booking-details-meta"><span>{guide.id}</span><span>Demo record · changes reset on reload</span></p>

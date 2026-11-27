@@ -1,0 +1,38 @@
+.schedule-summary { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--line); background: var(--panel); }
+.schedule-summary > div { min-width: 0; padding: 14px; border-right: 1px solid var(--line); }
+.schedule-summary > div:last-child { border-right: 0; }
+.schedule-summary span, .schedule-summary strong { display: block; }
+.schedule-summary span { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.schedule-summary strong { margin-top: 6px; color: var(--ocean); font-family: "Playfair Display", Georgia, serif; font-size: 24px; }
+.schedule-explanation { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.schedule-explanation svg, .schedule-detail-warning svg { flex: none; color: var(--warning-strong); }
+.schedule-range { grid-template-columns: repeat(2, minmax(0, 200px)) 1fr; }
+.schedule-range p { color: var(--danger-strong); font-size: 12px; }
+.schedule-view-controls { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.schedule-view-controls > div { display: flex; border: 1px solid var(--line); }
+.schedule-view-controls > div button { min-height: 38px; padding: 0 14px; border: 0; display: flex; gap: 6px; align-items: center; color: var(--ocean); background: var(--panel); font-size: 11px; }
+.schedule-view-controls > div button.active { color: white; background: var(--teal); }
+.schedule-calendar { min-width: 0; border: 1px solid var(--line); background: var(--panel); }
+.schedule-calendar-heading { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.schedule-calendar-heading h2 { color: var(--ocean); font-family: "Playfair Display", Georgia, serif; font-size: 20px; }
+.schedule-calendar-heading p { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.schedule-calendar-heading > div:last-child { display: flex; gap: 6px; }
+.schedule-calendar-heading button { width: 36px; height: 36px; border: 1px solid var(--line-strong); display: grid; place-items: center; color: var(--ocean); background: var(--panel); }
+.schedule-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.schedule-calendar-grid > span, .schedule-calendar-grid > button { min-width: 0; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.schedule-calendar-grid > button { min-height: 66px; padding: 9px; display: flex; align-items: flex-start; flex-direction: column; gap: 5px; color: var(--ocean); background: transparent; text-align: left; }
+.schedule-calendar-grid > button.has-bookings { background: var(--soft); }
+.schedule-calendar-grid > button.selected { box-shadow: inset 0 0 0 2px var(--teal-dark); }
+.schedule-calendar-grid button b { font-size: 12px; }
+.schedule-calendar-grid button small { color: var(--teal-dark); font-size: 10px; font-weight: 700; }
+.schedule-weekday { padding: 9px 2px; color: var(--muted); font-size: 10px; font-weight: 700; text-align: center; }
+.schedule-table table { min-width: 1000px; }
+.schedule-table td small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+.schedule-table td small.schedule-warning { color: var(--warning-strong); }
+.schedule-link { padding: 3px 0; border: 0; color: var(--teal-dark); background: transparent; font-size: inherit; font-weight: 700; text-align: left; }
+.schedule-link:hover { text-decoration: underline; }
+.schedule-detail-warning { padding: 0 20px 14px; display: flex; gap: 7px; color: var(--warning-strong); font-size: 11px; line-height: 1.5; }
+.schedule-detail-actions { padding: 0 20px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 1050px) { .schedule-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } .schedule-summary > div { border-bottom: 1px solid var(--line); } }
+@media (max-width: 760px) { .schedule-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .schedule-calendar-grid > button { min-height: 54px; padding: 5px; } .schedule-calendar-grid button small { font-size: 9px; } }
+@media (max-width: 420px) { .schedule-range { grid-template-columns: 1fr; } .schedule-calendar-grid button small { font-size: 0; } .schedule-calendar-grid button small::after { content: "•"; font-size: 16px; } }

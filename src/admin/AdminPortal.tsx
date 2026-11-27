@@ -7,6 +7,10 @@ import ToursManagement from "./ToursManagement";
 import TourEditor from "./TourEditor";
 import GuidesManagement from "./GuidesManagement";
 import GuideDetails from "./GuideDetails";
+import CustomersManagement from "./CustomersManagement";
+import CustomerDetails from "./CustomerDetails";
+import AvailabilityManagement from "./AvailabilityManagement";
+import { deriveCustomers } from "./customers";
 import { initialTours, type TourRecord } from "./tours";
 import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
 import { ThemeToggle } from "../shared/theme/theme";
@@ -91,7 +95,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability";
 
 function StatusBadge({ status }: { status: string }) {
   return <span className={`admin-status ${status.toLowerCase()}`}>{status}</span>;
@@ -276,6 +280,10 @@ export default function AdminPortal() {
   const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
+  const [selectedCustomerKey, setSelectedCustomerKey] = useState<string | null>(null);
+  const [bookingOrigin, setBookingOrigin] = useState<"Bookings" | "CustomerDetails" | "Availability">("Bookings");
+  const [guideOrigin, setGuideOrigin] = useState<"Guides" | "Availability">("Guides");
+  const [scheduleVisited, setScheduleVisited] = useState(false);
   const [bookingDate, setBookingDate] = useState("");
   const [period, setPeriod] = useState<"7 days" | "30 days">("7 days");
   const [modal, setModal] = useState<ModalState>(null);
@@ -287,15 +295,20 @@ export default function AdminPortal() {
     return matches.slice(0, 5);
   }, [query, records]);
   const pendingBookings = records.filter((record) => record.status === "Pending").length;
+  const customers = useMemo(() => deriveCustomers(records), [records]);
   const bookingsNeedingGuide = records.filter((record) => (record.status === "Pending" || record.status === "Confirmed") && !record.assignedGuideId).length;
   const openFuture = (label: string) => setModal({ title: label, description: `The ${label} management screen is reserved for a future implementation.` });
   const navigate = (label: string) => {
     setMobileNavOpen(false);
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides") {
-      setPage(label === "Tours & Experiences" ? "Tours" : label);
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling") {
+      setPage(label === "Tours & Experiences" ? "Tours" : label === "Availability & Scheduling" ? "Availability" : label);
+      if (label === "Availability & Scheduling") setScheduleVisited(true);
       setSelectedBookingRef(null);
       setSelectedTourId(null);
       setSelectedGuideId(null);
+      setSelectedCustomerKey(null);
+      setBookingOrigin("Bookings");
+      setGuideOrigin("Guides");
       setQuery("");
       setBookingDate("");
       window.scrollTo({ top: 0 });
@@ -303,9 +316,10 @@ export default function AdminPortal() {
       openFuture(label);
     }
   };
-  const viewBooking = (ref: string) => {
+  const viewBooking = (ref: string, origin: "Bookings" | "CustomerDetails" | "Availability" = "Bookings") => {
     setMobileNavOpen(false);
     setSelectedBookingRef(ref);
+    setBookingOrigin(origin);
     setPage("BookingDetails");
     setQuery("");
     window.scrollTo({ top: 0 });
@@ -329,11 +343,27 @@ export default function AdminPortal() {
     setPage("TourEditor");
     window.scrollTo({ top: 0 });
   };
-  const viewGuide = (id: string) => {
+  const viewGuide = (id: string, origin: "Guides" | "Availability" = "Guides") => {
     setMobileNavOpen(false);
     setSelectedGuideId(id);
+    setGuideOrigin(origin);
     setPage("GuideDetails");
     setQuery("");
+    window.scrollTo({ top: 0 });
+  };
+  const viewCustomer = (key: string) => {
+    setMobileNavOpen(false);
+    setSelectedCustomerKey(key);
+    setPage("CustomerDetails");
+    setQuery("");
+    window.scrollTo({ top: 0 });
+  };
+  const backToCustomer = () => {
+    setPage("CustomerDetails");
+    window.scrollTo({ top: 0 });
+  };
+  const backToSchedule = () => {
+    setPage("Availability");
     window.scrollTo({ top: 0 });
   };
   const changeGuideStatus = (id: string, from: GuideRecord["status"], to: GuideRecord["status"]): boolean => {
@@ -358,7 +388,7 @@ export default function AdminPortal() {
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
@@ -366,9 +396,12 @@ export default function AdminPortal() {
           : page === "Tours" ? ["Tours & Experiences"]
           : page === "TourEditor" ? ["Tours & Experiences", selectedTourId ? tours.find((tour) => tour.id === selectedTourId)?.name ?? selectedTourId : "New Tour"]
           : page === "GuideDetails" ? ["Guides", "Guide Details"]
+          : page === "CustomerDetails" ? ["Customers", "Customer Details"]
+          : page === "Availability" ? ["Availability & Scheduling"]
           : [page]
         } query={query} onQuery={setQuery} onNotifications={() => setNotificationsOpen(true)} onToggleMenu={() => setMobileNavOpen((value) => !value)} mobileNavOpen={mobileNavOpen} />
         <main className="admin-content">
+          {scheduleVisited && <div hidden={page !== "Availability"}><AvailabilityManagement records={records} guides={guides} onViewBooking={(ref) => viewBooking(ref, "Availability")} onViewGuide={(id) => viewGuide(id, "Availability")} onAssignGuide={(ref) => { setBookingOrigin("Availability"); assignGuide(ref); }} /></div>}
           {page === "Overview" ? <>
           <section className="admin-welcome"><div><p className="admin-eyebrow">Platform overview</p><h1>Good morning, Administrator.</h1><p>Here’s what’s happening across Mombasa Connect today.</p></div><div className="welcome-actions"><span><b>Saturday</b><small>14 November 2026 · Demo</small></span><button className="admin-primary-button" type="button" onClick={createTour}><Plus size={16} />Create New Tour</button></div></section>
           <section className="overview-layout">
@@ -392,16 +425,21 @@ export default function AdminPortal() {
           </> : page === "Bookings"
             ? <BookingsManagement records={records} guides={guides} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
             : page === "BookingDetails"
-            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => navigate("Bookings")} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            ? <BookingDetails records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
-            ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef) : navigate("Bookings")} />
+            ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef, bookingOrigin) : navigate("Bookings")} />
             : page === "Tours"
             ? <ToursManagement tours={tours} onToursChange={setTours} bookings={records} onEditTour={editTour} onCreateTour={createTour} />
             : page === "TourEditor"
             ? <TourEditor tours={tours} tourId={selectedTourId} onSave={saveTour} onBack={() => navigate("Tours & Experiences")} />
             : page === "Guides"
             ? <GuidesManagement guides={guides} records={records} onViewGuide={viewGuide} />
-            : <GuideDetails guide={guides.find((guide) => guide.id === selectedGuideId)} guideId={selectedGuideId ?? ""} records={records} tours={tours} onStatusChange={changeGuideStatus} onBack={() => navigate("Guides")} onViewBooking={viewBooking} />}
+            : page === "GuideDetails"
+            ? <GuideDetails guide={guides.find((guide) => guide.id === selectedGuideId)} guideId={selectedGuideId ?? ""} records={records} tours={tours} onStatusChange={changeGuideStatus} onBack={guideOrigin === "Availability" ? backToSchedule : () => navigate("Guides")} backLabel={guideOrigin === "Availability" ? "Availability & Scheduling" : "Guides"} onViewBooking={viewBooking} />
+            : page === "Customers"
+            ? <CustomersManagement customers={customers} onViewCustomer={viewCustomer} />
+            : page === "Availability" ? null
+            : <CustomerDetails customer={customers.find((customer) => customer.key === selectedCustomerKey)} onBack={() => navigate("Customers")} onViewBooking={(ref) => viewBooking(ref, "CustomerDetails")} />}
         </main>
       </div>
       {notificationsOpen && <NotificationPanel onClose={() => setNotificationsOpen(false)} />}

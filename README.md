@@ -11,7 +11,7 @@ A tourism discovery and booking frontend connecting visitors with locally guided
 | Public website | Implemented with experience previews, account forms, and a USSD walkthrough. |
 | Customer portal | Demonstration dashboard, bookings, discovery, notifications, profile, and support screens. |
 | Guide portal | Demonstration assignments, schedule, availability, notifications, profile, and support screens. |
-| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, and Guides Management screens with shared light/dark theme and temporary demonstration data. |
+| Admin portal | Connected Overview, Bookings, Guide Assignment, Tours & Experiences, Guides, Customers, and Availability & Scheduling screens with shared light/dark theme and temporary demonstration data. |
 | Backend and integrations | Not yet connected; data and operational actions are demonstrations. |
 | Deployment | Live frontend hosted on Render; the application remains a demonstration prototype. |
 | Project setup | React and Vite frontend with an npm lockfile for reproducible installs. |
@@ -65,7 +65,7 @@ Prices, reservations, customer details, guide assignments, and notifications are
 
 ### Admin Portal
 
-- Shared `/admin` shell with Overview, Bookings Management, Booking Details, Guide Assignment, Tours & Experiences, and Guides Management screens, active navigation, breadcrumbs, search, notifications, the shared light/dark theme toggle, and responsive navigation.
+- Shared `/admin` shell with Overview, Bookings Management, Booking Details, Guide Assignment, Tours & Experiences, Guides Management, Customers Management, and Availability & Scheduling screens, active navigation, breadcrumbs, search, notifications, the shared light/dark theme toggle, and responsive navigation.
 - Refreshed Overview with performance cards, booking activity and channel charts, an operations summary, recent bookings, popular experiences, and an upcoming-tours panel.
 - Interactive calendar with previous/next month controls and highlighted dates containing pending or confirmed sample bookings.
 - Selecting a calendar date opens Bookings Management filtered by experience date, including an empty state for dates without bookings.
@@ -76,6 +76,8 @@ Prices, reservations, customer details, guide assignments, and notifications are
 - Guide Assignment for pending and confirmed bookings: one primary guide per booking, selected from demonstration guide records with explicit confirmation for assignment, replacement, and removal. Only approved demo guides are assignable; completed, cancelled, and rejected bookings are locked.
 - Tours & Experiences supports searching, filtering, creating, editing, and publishing demo tours. Draft, Published, and Unpublished are distinct admin states; tour names must be unique, ignoring case and surrounding whitespace.
 - Guides Management provides a searchable directory, guide details and confirmed demo actions to approve, reject, suspend or reactivate guides. Existing booking assignments remain intact when a guide is no longer approved; only approved guides are eligible for new assignments. Verification documents are not supported.
+- Customers Management derives a searchable, filterable directory and booking histories from the shared admin booking records. Website and USSD-only categories describe booking channels, not verified account status. Matching names and sufficiently complete phone numbers group bookings; name matches alone do not. Email, account IDs, and booking creation dates are unavailable in these admin records.
+- Availability & Scheduling provides a monthly calendar, date filters, booking list and details using the shared admin booking and guide records. Same-guide assignments on the same date are potential issues only; departure times and guide working hours are not recorded, so neither time conflicts nor guide availability can be confirmed.
 - Other unfinished modules remain explicitly marked future-feature placeholders.
 - Booking, guide-assignment, and tour changes survive navigation between admin screens but reset on reload. The admin tour catalogue does not update the separate public or customer catalogues. Platform-wide totals and other operational figures are illustrative, not calculated from the sample reservations.
 - No backend integration, authentication, or access control.
@@ -220,6 +222,14 @@ src/
     GuideDetails.tsx   Guide profile, assignments, and verification actions
     GuideStatusBadge.tsx Shared verification status badge
     guides-management.css Guide directory and detail styles
+    CustomersManagement.tsx Customer directory, search, and channel filters
+    CustomerDetails.tsx Customer information and shared booking history
+    customers.ts       Customer profiles derived from demo bookings
+    customers-management.css Customer directory and detail styles
+    AvailabilityManagement.tsx Schedule filters, booking list, and details
+    ScheduleCalendar.tsx Monthly experience-date calendar
+    scheduling.ts      Schedule date and potential-issue helpers
+    availability-management.css Schedule styles
     ToursManagement.tsx Demo tour catalogue, filters, and publication actions
     TourEditor.tsx     Demo tour creation and editing
     tours.ts           Tour data, categories, images, and validation
