@@ -81,7 +81,7 @@ export default function GuideDetails({ guide, guideId, records, tours, onStatusC
             <div className="panel-heading"><div><h2>Verification</h2><p>Demo status changes only.</p></div><ShieldCheck size={17} /></div>
             <div className="guides-verification">
               <GuideStatusBadge status={guide.status} />
-              <p>Verification documents and activity history are not supported in the current demo.</p>
+              <p>Verification documents are not supported. Status changes in this session appear in Activity Logs.</p>
               {guide.status !== "Approved" && <p>Existing assignments are retained; only approved guides can receive new bookings.</p>}
               {chosenAction ? <div className="guides-confirm">
                 <p>{chosenAction.label} {guide.name}? Existing booking assignments will not be changed.</p>

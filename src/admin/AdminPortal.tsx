@@ -1,5 +1,5 @@
 import './admin.css';
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import BookingsManagement, { formatBookingDate, type BookingRecord } from "./BookingsManagement";
 import BookingDetails from "./BookingDetails";
 import GuideAssignment from "./GuideAssignment";
@@ -15,8 +15,10 @@ import USSDActivity from "./USSDActivity";
 import ReportsAnalytics from "./ReportsAnalytics";
 import WebsiteContent from "./WebsiteContent";
 import SettingsManagement from "./SettingsManagement";
-import { initialAdminSettings, visibleDemoNotifications, type DemoNotification } from "./settings";
-import { initialWebsiteContent } from "../shared/website/content";
+import ActivityLogs from "./ActivityLogs";
+import { bookingActivities, createActivity, settingsActivity, tourActivity, websiteActivity, type Activity as ActivityRecord, type ActivityDraft } from "./activity";
+import { initialAdminSettings, visibleDemoNotifications, type AdminSettings, type DemoNotification } from "./settings";
+import { initialWebsiteContent, type WebsiteContent as WebsiteContentRecord } from "../shared/website/content";
 import { deriveCustomers } from "./customers";
 import { initialTours, type TourRecord } from "./tours";
 import { canChangeGuideStatus, demoGuides, type GuideRecord } from "./guides";
@@ -102,7 +104,7 @@ const experiences = [
 ];
 
 type ModalState = { title: string; description: string } | null;
-type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" | "Reports & Analytics" | "Website Content" | "Settings";
+type AdminPage = "Overview" | "Bookings" | "BookingDetails" | "GuideAssignment" | "Tours" | "TourEditor" | "Guides" | "GuideDetails" | "Customers" | "CustomerDetails" | "Availability" | "Payments" | "USSD Activity" | "Reports & Analytics" | "Website Content" | "Settings" | "Activity Logs";
 
 const PublicWebsite = lazy(() => import("../public/App"));
 
@@ -284,6 +286,8 @@ export default function AdminPortal() {
   const [websiteDirty, setWebsiteDirty] = useState(false);
   const [settings, setSettings] = useState(() => ({ ...initialAdminSettings }));
   const [settingsDirty, setSettingsDirty] = useState(false);
+  const [activities, setActivities] = useState<ActivityRecord[]>([]);
+  const activitySequence = useRef(0);
   const [publicPreview, setPublicPreview] = useState(false);
   const [guides, setGuides] = useState(demoGuides);
   const [selectedBookingRef, setSelectedBookingRef] = useState<string | null>(null);
@@ -348,7 +352,7 @@ export default function AdminPortal() {
     return true;
   };
   const navigate = (label: string) => {
-    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity" || label === "Reports & Analytics" || label === "Website Content" || label === "Settings") {
+    if (label === "Overview" || label === "Bookings" || label === "Tours & Experiences" || label === "Guides" || label === "Customers" || label === "Availability & Scheduling" || label === "Payments" || label === "USSD Activity" || label === "Reports & Analytics" || label === "Website Content" || label === "Settings" || label === "Activity Logs") {
       if (label !== page && !canLeaveEditor()) return;
       setMobileNavOpen(false);
       setPage(label === "Tours & Experiences" ? "Tours" : label === "Availability & Scheduling" ? "Availability" : label);
@@ -432,13 +436,42 @@ export default function AdminPortal() {
     setPage("USSD Activity");
     window.scrollTo({ top: 0 });
   };
+  const recordActivities = (drafts: ActivityDraft[]) => {
+    if (!drafts.length) return;
+    const entries = drafts.map((draft) => createActivity(++activitySequence.current, draft));
+    setActivities((current) => [...current, ...entries]);
+  };
+  const changeBookings = (next: BookingRecord[]) => {
+    recordActivities(bookingActivities(records, next));
+    setRecords(next);
+  };
+  const changeTours = (next: TourRecord[]) => {
+    const changes = next.map((tour) => tourActivity(tours.find((item) => item.id === tour.id), tour)).filter((item): item is ActivityDraft => item !== null);
+    recordActivities(changes);
+    setTours(next);
+  };
+  const saveWebsiteContent = (next: WebsiteContentRecord) => {
+    const activity = websiteActivity(websiteContent, next);
+    if (activity) recordActivities([activity]);
+    setWebsiteContent(next);
+  };
+  const saveSettings = (next: AdminSettings) => {
+    const activity = settingsActivity(settings, next);
+    if (activity) recordActivities([activity]);
+    setSettings(next);
+  };
   const changeGuideStatus = (id: string, from: GuideRecord["status"], to: GuideRecord["status"]): boolean => {
     const guide = guides.find((item) => item.id === id);
     if (!guide || guide.status !== from || !canChangeGuideStatus(from, to)) return false;
+    const type = to === "Approved" && from === "Suspended" ? "Reactivated" : to;
+    if (type !== "Approved" && type !== "Rejected" && type !== "Suspended" && type !== "Reactivated") return false;
+    recordActivities([{ action: `Guide ${type.toLowerCase()}`, module: "Guides", type, reference: id, details: `Guide status changed from ${from} to ${to}.` }]);
     setGuides((current) => current.map((item) => item.id === id && item.status === from ? { ...item, status: to } : item));
     return true;
   };
   const saveTour = (tour: TourRecord, previousName: string | null) => {
+    const activity = tourActivity(tours.find((item) => item.id === tour.id), tour);
+    if (activity) recordActivities([activity]);
     setTours((current) => current.some((item) => item.id === tour.id)
       ? current.map((item) => item.id === tour.id ? tour : item)
       : [...current, tour]);
@@ -465,7 +498,7 @@ export default function AdminPortal() {
 
   return (
     <div className="admin-app">
-      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : page === "Reports & Analytics" ? "Reports & Analytics" : page === "Website Content" ? "Website Content" : page === "Settings" ? "Settings" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
+      <Sidebar activeItem={page === "Overview" ? "Overview" : page === "Tours" || page === "TourEditor" ? "Tours & Experiences" : page === "Guides" || page === "GuideDetails" ? "Guides" : page === "Customers" || page === "CustomerDetails" ? "Customers" : page === "Availability" ? "Availability & Scheduling" : page === "Payments" ? "Payments" : page === "USSD Activity" ? "USSD Activity" : page === "Reports & Analytics" ? "Reports & Analytics" : page === "Website Content" ? "Website Content" : page === "Settings" ? "Settings" : page === "Activity Logs" ? "Activity Logs" : "Bookings"} onNavigate={navigate} onLogout={() => openFuture("Secure Logout")} mobileNavOpen={mobileNavOpen} />
       <div className="admin-shell">
         <Topbar trail={
           page === "BookingDetails" ? ["Bookings", selectedBookingRef ?? "Booking"]
@@ -502,13 +535,13 @@ export default function AdminPortal() {
           </aside>
           </section>
           </> : page === "Bookings"
-            ? <BookingsManagement records={records} guides={guides} settings={settings} onRecordsChange={setRecords} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
+            ? <BookingsManagement records={records} guides={guides} settings={settings} onRecordsChange={changeBookings} query={query} onQuery={setQuery} initialDate={bookingDate} onViewBooking={viewBooking} onAssignGuide={assignGuide} />
             : page === "BookingDetails"
-            ? <BookingDetails records={records} guides={guides} settings={settings} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : bookingOrigin === "USSD Activity" ? backToUssd : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : bookingOrigin === "USSD Activity" ? "USSD Activity" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
+            ? <BookingDetails records={records} guides={guides} settings={settings} bookingRef={selectedBookingRef ?? ""} onRecordsChange={changeBookings} onBack={bookingOrigin === "CustomerDetails" ? backToCustomer : bookingOrigin === "Availability" ? backToSchedule : bookingOrigin === "Payments" ? backToPayments : bookingOrigin === "USSD Activity" ? backToUssd : () => navigate("Bookings")} backLabel={bookingOrigin === "CustomerDetails" ? "Customer Details" : bookingOrigin === "Availability" ? "Availability & Scheduling" : bookingOrigin === "Payments" ? "Payments" : bookingOrigin === "USSD Activity" ? "USSD Activity" : "Bookings"} onAssignGuide={() => assignGuide(selectedBookingRef ?? "")} />
             : page === "GuideAssignment"
-            ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={setRecords} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef, bookingOrigin) : navigate("Bookings")} />
+            ? <GuideAssignment records={records} guides={guides} bookingRef={selectedBookingRef ?? ""} onRecordsChange={changeBookings} onBack={() => selectedBookingRef ? viewBooking(selectedBookingRef, bookingOrigin) : navigate("Bookings")} />
             : page === "Tours"
-            ? <ToursManagement tours={tours} onToursChange={setTours} bookings={records} onEditTour={editTour} onCreateTour={createTour} />
+            ? <ToursManagement tours={tours} onToursChange={changeTours} bookings={records} onEditTour={editTour} onCreateTour={createTour} />
             : page === "TourEditor"
             ? <TourEditor tours={tours} tourId={selectedTourId} onSave={saveTour} onBack={() => navigate("Tours & Experiences")} />
             : page === "Guides"
@@ -519,10 +552,12 @@ export default function AdminPortal() {
             ? <CustomersManagement customers={customers} onViewCustomer={viewCustomer} />
             : page === "Reports & Analytics"
             ? <ReportsAnalytics records={records} tours={tours} guides={guides} />
+            : page === "Activity Logs"
+            ? <ActivityLogs activities={activities} />
             : page === "Settings"
-            ? <SettingsManagement settings={settings} onSave={setSettings} onDirtyChange={setSettingsDirty} onWebsiteContent={() => navigate("Website Content")} />
+            ? <SettingsManagement settings={settings} onSave={saveSettings} onDirtyChange={setSettingsDirty} onWebsiteContent={() => navigate("Website Content")} />
             : page === "Website Content"
-            ? <WebsiteContent content={websiteContent} tours={tours} onSave={setWebsiteContent} onDirtyChange={setWebsiteDirty} onPreview={() => {
+            ? <WebsiteContent content={websiteContent} tours={tours} onSave={saveWebsiteContent} onDirtyChange={setWebsiteDirty} onPreview={() => {
               window.history.pushState(null, "", "/");
               setPublicPreview(true);
               window.scrollTo({ top: 0 });
